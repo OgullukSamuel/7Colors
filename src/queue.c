@@ -37,12 +37,9 @@ void insert_sorted(Queue* q, int (*value)) {
 }
 
 void enqueue(Queue* q, int* value) {
-    if (q->length == SIZE) {
-        //printf("Queue pleine !\n");
-        return;
-    }
+    if (q->length == SIZE) return;
 
-    q->rear++;
+    q->rear = (q->rear + 1) % SIZE; 
     q->items[q->rear][0] = value[0];
     q->items[q->rear][1] = value[1];
 
@@ -50,9 +47,11 @@ void enqueue(Queue* q, int* value) {
     q->length++;
 }
 
+
 void dequeue(Queue* q, int* value) {
     if (q->length == 0) {
         printf("Queue vide !\n");
+        return;
     }
 
     value[0] = q->items[q->front][0];
@@ -80,7 +79,8 @@ void dequeue(Queue* q, int* value) {
 
 // Recherche dichotomique en O(log(n)) dans le tableau trié
 int isinQueue(Queue* q, int value[2]) {
-    int injected_value = injection(&value[0]);
+    if(q->length == 0) return 0;
+    int injected_value = injection(value);
     int left = 0;
     int right = q->length - 1;
 

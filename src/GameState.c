@@ -35,12 +35,12 @@ void set_map_value (GameState* state, int x, int y, Color value){
 
 
 Color get_map_value (GameState* state, int x, int y){
-	if (state -> map == NULL || x > state -> size || y > state -> size || x < 0 || y < 0)
+	if (state->map == NULL || x >= state->size || y >= state->size || x < 0 || y < 0)
 	{
 		printf("[ERROR] map not big enough or not initialized %p %i access (%i %i)", state -> map, state -> size, x, y);
 		return ERROR;
 	}
-	return state -> map[y * state -> size + x];
+	return state -> map[x * (state -> size) + y];
 }
 
 void fill_map(GameState* map){
@@ -132,18 +132,17 @@ void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Q
     int size = state->size;
     Color color = get_map_value(state, x, y);
     int directions[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-
     for (int i = 0; i < 4; i++) {
         int x_ = x + directions[i][0];
         int y_ = y + directions[i][1];
 
         if (x_ >= 0 && x_ < size && y_ >= 0 && y_ < size) {
             int pos[2] = {x_, y_};
-            
             if (!isinQueue(explored, pos) && !isinQueue(unexplored, pos)) {
                 if (get_map_value(state, x_, y_) == color) {
                     enqueue(unexplored, pos);
-                } else if (!SameColor) {
+                }
+				if (SameColor==0 && get_map_value(state, x_, y_) != color) {
                     enqueue(movements, pos);
                 }
             }
@@ -154,33 +153,21 @@ void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Q
     enqueue(explored, posi);
 }
 
-
-void get_initial_available_shots(GameState* state, Color player){
-	int size=state->size;
-	if(player==PLAYER_1){
-		get_map_value(state,0, size-2);
-		get_map_value(state,1, size-1);
-	}
-	else{
-		get_map_value(state, size-2,0);
-		get_map_value(state,size-1,1);
-	}
-
-}
-
-void GR0_get_network(GameState* state,int x,int y, Queue* explored){
-	Queue unexplored;
+void GR0_get_network(GameState* state, int x, int y, Queue* explored) {
+    Queue unexplored;
     initQueue(&unexplored);
     initQueue(explored);
-	int pos[2] = {x,y};
-	enqueue(&unexplored, pos);
-	
-	while(unexplored.length!=0){
-		int next[2];
-		dequeue(&unexplored,next);
-		GR0_get_adjacent_cases(state, next[0],next[1], &unexplored, explored,1,explored);
-	}
+
+    int pos[2] = {x, y};
+    enqueue(&unexplored, pos);
+    
+    while (unexplored.length != 0) {
+        int next[2];
+        dequeue(&unexplored, next);
+        GR0_get_adjacent_cases(state, next[0], next[1], &unexplored, explored, 1, &unexplored);
+    }
 }
+
 
 void GR0_update_map(GameState* state,Queue* network,int player){
 	// ici on vient update les couleurs de la map un réseau de meme couleurs et un joueur
@@ -207,7 +194,7 @@ void GR0_get_move_available(GameState* state,int player,Queue moves[7]){
 	for(int i=0;i<7;i++){
 		initQueue(&moves[i]);
 	}
-	int pos[2]= { player == 1 ? 0 : state->size - 1,player == 1 ? state->size - 1 : 0 };
+	int pos[2]= { player == 1 ? state->size - 1 : 0,player == 1 ? 0 : state->size - 1 };
 	Queue unexplored;
     initQueue(&unexplored);
 	Queue explored;
@@ -220,7 +207,9 @@ void GR0_get_move_available(GameState* state,int player,Queue moves[7]){
 		dequeue(&unexplored,next);
 		GR0_get_adjacent_cases(state, next[0],next[1], &unexplored, &explored,0,&movements);
 	}
-	for(int i=0;i<movements.length;i++){
+
+	while(movements.length!=0){
+		//displayQueue(&movements);
 		dequeue(&movements,next);
 		enqueue(&moves[get_map_value(state,next[0] , next[1])-3], next);
 	}
@@ -273,9 +262,14 @@ int main(int argc, char** argv){
 
 
 	GR0_plot(&etat);
-	GR0_step(&etat, 1, 1, 1);
-	GR0_plot(&etat);
+	//GR0_plot(&etat);
 	GR0_get_move_available(&etat, 1, moves);
+	for(int i=0;i<7;i++){
+		displayQueue(&moves[i]);
+	}
+	GR0_step(&etat, 1, 5, 1);
+	GR0_plot(&etat);
+	
 	
 	GR0_free_state(&etat);
 }
