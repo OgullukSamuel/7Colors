@@ -180,7 +180,7 @@ void GR0_update_map(GameState* state,Queue* network,int player){
 }
 
 void GR0_step(GameState* state ,int x, int y ,int player){
-	set_map_value(state, x, y, player);
+	
 	int size=state->size;
 	Queue explored;
 	GR0_get_network(state, x, y,  &explored);
