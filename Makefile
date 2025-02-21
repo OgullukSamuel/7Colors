@@ -1,21 +1,12 @@
-#FLAGS=-Wall -Werror -lm -g
-
-#7color : o/GameState.o
-#	gcc $(FLAGS) o/GameState.o -o 7color
-
-#o/GameState.o: head/GameState.h src/GameState.c
-#	gcc $(FLAGS) -c src/GameState.c -o o/GameState.o
-
-
 CC = gcc
 
-CFLAGS = -Wall -g -I$(HEAD_DIR)
+CFLAGS = -Wall -Werror -g -I$(HEAD_DIR)
 
 SRC_DIR = src
 OBJ_DIR = o
 HEAD_DIR = head
 
-MODULES = GameState queue
+MODULES = GameState queue display
 
 OBJ = $(patsubst %, $(OBJ_DIR)/%.o, $(MODULES))
 

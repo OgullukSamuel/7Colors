@@ -1,5 +1,10 @@
 #ifndef GAME_STATE_H
 #define GAME_STATE_H
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <stdint.h>
 #include "../head/queue.h"
 typedef enum Color{
 	ERROR = -1,
@@ -35,16 +40,16 @@ int GR0_get_random_scalar(int min, int max);
 
 void GR0_free_state(GameState* state);
 
-void GR0_plot(GameState* state);
-
-const char* get_color_code(Color c);
-
-void GR0_plot(GameState* state) ;
-
-const char* get_background_color_code(Color c) ;
+void GR0_get_network(GameState* state,int *pos , Queue* explored,Queue* coup);
 
 void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Queue* explored, int SameColor, Queue* movements);
 
-void GR0_get_move_available(GameState* state,int player,Queue moves[7]);
+uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]);
+
+uint8_t GR0_condenser(Queue* moves);
+
+void GR0_decondenser(uint8_t condenser,int bits[7]);
+void GR0_humain_vs_humain();
+
 
 #endif

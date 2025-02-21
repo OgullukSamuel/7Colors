@@ -1,8 +1,8 @@
 #include "../head/GameState.h"
+
+#include "../head/display.h"
 #include "../head/queue.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <time.h>
+
 
 GameState state = {.map = NULL, .size = 0};
 
@@ -51,83 +51,6 @@ void fill_map(GameState* map){
 
 
 
-const char* get_color_code(Color c) {
-    switch(c) {
-        case ERROR: return "\033[31m";   // Red for ERROR
-        case EMPTY: return "\033[37m";   // White for EMPTY
-        case PLAYER_1: return "\033[34m"; // Blue for PLAYER_1
-        case PLAYER_2: return "\033[32m"; // Green for PLAYER_2
-        case RED: return "\033[31m";     // Red for RED
-        case GREEN: return "\033[32m";   // Green for GREEN
-        case BLUE: return "\033[34m";    // Blue for BLUE
-        case YELLOW: return "\033[33m";  // Yellow for YELLOW
-        case MAGENTA: return "\033[35m"; // Magenta for MAGENTA
-        case CYAN: return "\033[36m";    // Cyan for CYAN
-        case WHITE: return "\033[37m";   // White for WHITE
-        default: return "\033[0m";       // Default (reset color)
-    }
-}
-
-void GR0_plot(GameState* state) {
-    printf("┌");
-    for (int j = 0; j < state->size; j++) {
-        printf("───");
-    }
-    printf("┐\n");
-
-    for (int i = 0; i < state->size; i++) {
-        printf("│"); 
-        for (int j = 0; j < state->size; j++) {
-            Color c = state->map[state->size * i + j];
-            const char* bg_color = get_background_color_code(c); 
-            const char* text_color = get_color_code(c);          
-			if(c==PLAYER_1){
-				printf("%s%s 1 %s", bg_color, text_color, "\033[0m");	
-			}
-			else if (c==PLAYER_2) {
-				printf("%s%s 2 %s", bg_color, text_color, "\033[0m");
-			}
-            else {
-				printf("%s%s O %s", bg_color, text_color, "\033[0m");
-			}
-        }
-        printf("│\n");
-
-        if (i < state->size - 1) {
-            printf("├");
-            for (int j = 0; j < state->size; j++) {
-                printf("───");
-            }
-            printf("┤\n");
-        }
-    }
-
-    printf("└");
-    for (int j = 0; j < state->size; j++) {
-        printf("───");
-    }
-    printf("┘\n");
-
-    printf("\033[0m");
-}
-
-const char* get_background_color_code(Color c) {
-    switch(c) {
-        case ERROR: return "\033[48;5;1m";    // Red background for ERROR
-        case EMPTY: return "\033[48;5;15m";   // White background for EMPTY
-        case PLAYER_1: return "\033[48;5;4m"; // Blue background for PLAYER_1
-        case PLAYER_2: return "\033[48;5;2m"; // Green background for PLAYER_2
-        case RED: return "\033[48;5;9m";      // Bright Red background for RED
-        case GREEN: return "\033[48;5;10m";   // Bright Green background for GREEN
-        case BLUE: return "\033[48;5;12m";    // Bright Blue background for BLUE
-        case YELLOW: return "\033[48;5;11m";  // Yellow background for YELLOW
-        case MAGENTA: return "\033[48;5;13m"; // Magenta background for MAGENTA
-        case CYAN: return "\033[48;5;14m";    // Cyan background for CYAN
-        case WHITE: return "\033[48;5;7m";    // Gray background for WHITE
-        default: return "\033[48;5;15m";      // Default white background
-    }
-}
-
 void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Queue* explored, int SameColor, Queue* movements) {
     int size = state->size;
     Color color = get_map_value(state, x, y);
@@ -142,8 +65,9 @@ void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Q
                 if (get_map_value(state, x_, y_) == color) {
                     enqueue(unexplored, pos);
                 }
-				if (SameColor==0 && get_map_value(state, x_, y_) != color) {
-                    enqueue(movements, pos);
+				if (SameColor==0) {
+					if(get_map_value(state, x_, y_) != color){enqueue(movements, pos);}
+                    
                 }
             }
         }
@@ -153,12 +77,10 @@ void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Q
     enqueue(explored, posi);
 }
 
-void GR0_get_network(GameState* state, int x, int y, Queue* explored) {
+void GR0_get_network(GameState* state,int *pos , Queue* explored,Queue* coup){ 
     Queue unexplored;
     initQueue(&unexplored);
-    initQueue(explored);
 
-    int pos[2] = {x, y};
     enqueue(&unexplored, pos);
     
     while (unexplored.length != 0) {
@@ -169,32 +91,39 @@ void GR0_get_network(GameState* state, int x, int y, Queue* explored) {
 }
 
 
+
 void GR0_update_map(GameState* state,Queue* network,int player){
 	// ici on vient update les couleurs de la map un réseau de meme couleurs et un joueur
-	int size=state->size;
 	int next[2];
 	while(network->length!=0){
 		dequeue(network, next);
 		set_map_value(state, next[0],next[1], player);
+
 	}
 }
 
-void GR0_step(GameState* state ,int x, int y ,int player){
-	
-	int size=state->size;
+void GR0_step(GameState* state ,Queue* coup ,int player){
 	Queue explored;
-	GR0_get_network(state, x, y,  &explored);
+	initQueue(&explored);
+	int poulpe[2];
+	displayQueue(coup);
+	while(coup->length!=0){
+		dequeue(coup, poulpe);
+		printf("poulpe [%d,%d]\n",poulpe[0], poulpe[1]);
+		GR0_get_network(state, poulpe,  &explored,coup);
+		
+	}
+	
 	GR0_update_map(state, &explored, player);
-
 }
 
 
 
-void GR0_get_move_available(GameState* state,int player,Queue moves[7]){
+uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]){
 	for(int i=0;i<7;i++){
 		initQueue(&moves[i]);
 	}
-	int pos[2]= { player == 1 ? state->size - 1 : 0,player == 1 ? 0 : state->size - 1 };
+	int pos[2]= { player == 1 ? 0 : state->size - 1,player == 1 ? state->size - 1 : 0 };
 	Queue unexplored;
     initQueue(&unexplored);
 	Queue explored;
@@ -213,14 +142,22 @@ void GR0_get_move_available(GameState* state,int player,Queue moves[7]){
 		dequeue(&movements,next);
 		enqueue(&moves[get_map_value(state,next[0] , next[1])-3], next);
 	}
+	return(GR0_condenser(moves));
 }
-/*
+
+
+
 Color GR0_IA_Random(GameState* state,Color player){
-	GR0_get_move_available();
-	//Color move=;
+	Queue moves[7];
+	GR0_get_move_available(state,player,moves);
+	int i;
+	do {
+		i = GR0_get_random_scalar(0, 6);
+	} while (moves[i].length == 0);
+	Color move= i+3;
 	return(move);
 }
-*/
+
 int GR0_partie_finie(GameState* state,Queue* territoire1,Queue* territoire2){
 	//0 si la partie n'est pas finie,1 si 1 a gagné , 2 si 2 a gagné
 	if(territoire1->length>state->size/2){return(1);}
@@ -252,25 +189,66 @@ void initialize(Queue* territoire1,Queue* territoire2,GameState* etat){
 
 }
 
+uint8_t GR0_condenser(Queue* moves){
+	uint8_t result = 0;
+	for(int i=0;i<7;i++){
+		result |= (moves[i].length > 0) << i;
+	}
+	return(result);
+}
 
-int main(int argc, char** argv){
+void GR0_decondenser(uint8_t condenser,int bits[7]){
+	for (int i = 0; i < 7; i++) {
+		bits[i] = (condenser >> i) & 1;
+	}
+}	
+
+
+
+
+
+void GR0_humain_vs_humain(){
 	Queue territoire1;
 	Queue territoire2;	
 	Queue moves[7];
 	GameState etat;
-    initialize(&territoire1, &territoire2,&etat);
+	initialize(&territoire1, &territoire2,&etat);
+	int fin=0;
+	int coup;
+	uint8_t code_coups;
+	while(fin==0){
+		GR0_plot(&etat);
+		code_coups= GR0_get_move_available(&etat, 1, moves);
+		coup=GR0_get_user_input(1,code_coups);
+		if (coup==-1){
+			fin=2;
+			break;
+		}
+		GR0_step(&etat, &moves[coup],1);
+		GR0_plot(&etat);
+		fin=GR0_partie_finie(&etat, &territoire1, &territoire2);
+		if(fin!=0){break;}
+		code_coups= GR0_get_move_available(&etat, 2, moves);
+		coup=GR0_get_user_input(2,code_coups);
+		if (coup==-1){
+			fin=1;
+			break;
+		}
 
-
-	GR0_plot(&etat);
-	//GR0_plot(&etat);
-	GR0_get_move_available(&etat, 1, moves);
-	for(int i=0;i<7;i++){
-		displayQueue(&moves[i]);
+		GR0_step(&etat, &moves[coup],2);
+		fin=GR0_partie_finie(&etat, &territoire1, &territoire2);
 	}
-	GR0_step(&etat, 1, 5, 1);
 	GR0_plot(&etat);
-	
-	
+	if(fin==1){printf("Le joueur 1 a gagné\n");}
+	else if(fin==2){printf("Le joueur 2 a gagné\n");}
+	else{printf("Match nul\n");}
 	GR0_free_state(&etat);
+}
+
+int main(int argc, char** argv){
+
+	GR0_humain_vs_humain();
+	
+	return 0;
 }
 
