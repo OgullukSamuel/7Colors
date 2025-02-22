@@ -6,7 +6,7 @@ SRC_DIR = src
 OBJ_DIR = o
 HEAD_DIR = head
 
-MODULES = GameState queue display
+MODULES = GameState queue display Agents
 
 OBJ = $(patsubst %, $(OBJ_DIR)/%.o, $(MODULES))
 

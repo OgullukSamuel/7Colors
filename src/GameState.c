@@ -1,7 +1,8 @@
 #include "../head/GameState.h"
-
+#include "../head/Agents.h"
 #include "../head/display.h"
 #include "../head/queue.h"
+#include <stdio.h>
 
 
 GameState state = {.map = NULL, .size = 0};
@@ -115,6 +116,17 @@ void GR0_step(GameState* state ,Queue* coup ,int player){
 }
 
 
+int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player){
+	Queue explored;
+	int current[2];
+	while(coup->length!=0){
+		dequeue(coup, current);
+		GR0_get_network(state, current,  &explored,coup);
+	}
+	return(explored.length);
+}
+
+
 
 uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]){
 	for(int i=0;i<7;i++){
@@ -143,17 +155,6 @@ uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]){
 }
 
 
-
-Color GR0_IA_Random(GameState* state,Color player){
-	Queue moves[7];
-	GR0_get_move_available(state,player,moves);
-	int i;
-	do {
-		i = GR0_get_random_scalar(0, 6);
-	} while (moves[i].length == 0);
-	Color move= i;
-	return(move);
-}
 
 int GR0_partie_finie(GameState* state,Queue* territoire1,Queue* territoire2){
 	//0 si la partie n'est pas finie,1 si 1 a gagné , 2 si 2 a gagné
@@ -216,6 +217,7 @@ void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(
 		GR0_plot(&etat);
 		GR0_get_move_available(&etat, 1, moves);
 		coup = decision1(&etat,1);
+		printf("coup1 : %d\n",coup);
 		if (coup==-1){
 			fin=2;
 			break;
@@ -226,6 +228,7 @@ void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(
 		if(fin!=0){break;}
 		GR0_get_move_available(&etat, 2, moves);
 		coup = decision2(&etat,2);
+		printf("coup2 : %d\n",coup);
 		if (coup==-1){
 			fin=1;
 			break;
@@ -252,7 +255,7 @@ int main(int argc, char** argv){
 			GR0_Agent_vs_Agent(&GR0_get_user_input,&GR0_IA_Random);
 			break;
 		case 3:
-			GR0_Agent_vs_Agent(&GR0_IA_Random,&GR0_IA_Random);
+			GR0_Agent_vs_Agent(&GR0_Glouton,&GR0_Glouton);
 			break;
 		case 4:
 			return 0;
