@@ -9,6 +9,8 @@ void GR0_plot(GameState* state) ;
 
 const char* get_background_color_code(Color c) ;
 
-int GR0_get_user_input(int player,uint8_t condenser);
+int GR0_gameplay_question();
+
+Color GR0_get_user_input(GameState* state,Color player);
 
 #endif

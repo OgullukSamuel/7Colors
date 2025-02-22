@@ -49,7 +49,7 @@ uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]);
 uint8_t GR0_condenser(Queue* moves);
 
 void GR0_decondenser(uint8_t condenser,int bits[7]);
-void GR0_humain_vs_humain();
+void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(GameState*,Color));
 
 
 #endif

@@ -79,17 +79,32 @@ const char* get_background_color_code(Color c) {
     }
 }
 
+int GR0_gameplay_question(){
+    printf("Selectionnez votre mode de jeu :\n");
+    printf("[1] Humain vs Humain\n");
+    printf("[2] Humain vs IA\n");
+    printf("[3] IA vs IA\n");
+    printf("[4] Quitter\n");
+    int choix;
+    scanf("%d", &choix);
+    return choix;
+}
 
 
 
-int GR0_get_user_input(int player,uint8_t condenser){
+
+Color GR0_get_user_input(GameState* state,Color player){
+    Queue moves[7];
+    uint8_t condenser=GR0_get_move_available(state, player, moves);
     if (condenser==0){
         printf("Le joueur %d ne peut pas jouer\n",player);
         return(-1);
     }
     int disponibilite[7];
-    GR0_decondenser(condenser, disponibilite);
-
+    for(int i=0;i<7;i++){
+		disponibilite[i] = (moves[i].length > 0);
+	}
+    
     printf("Joueur %d, choisissez une couleur parmi les suivantes :\n", player);
     for(int i = 0; i < 7; i++) {
         if(disponibilite[i] == 1) {

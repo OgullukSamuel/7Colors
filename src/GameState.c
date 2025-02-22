@@ -104,13 +104,10 @@ void GR0_update_map(GameState* state,Queue* network,int player){
 
 void GR0_step(GameState* state ,Queue* coup ,int player){
 	Queue explored;
-	initQueue(&explored);
-	int poulpe[2];
-	displayQueue(coup);
+	int current[2];
 	while(coup->length!=0){
-		dequeue(coup, poulpe);
-		printf("poulpe [%d,%d]\n",poulpe[0], poulpe[1]);
-		GR0_get_network(state, poulpe,  &explored,coup);
+		dequeue(coup, current);
+		GR0_get_network(state, current,  &explored,coup);
 		
 	}
 	
@@ -154,7 +151,7 @@ Color GR0_IA_Random(GameState* state,Color player){
 	do {
 		i = GR0_get_random_scalar(0, 6);
 	} while (moves[i].length == 0);
-	Color move= i+3;
+	Color move= i;
 	return(move);
 }
 
@@ -207,7 +204,7 @@ void GR0_decondenser(uint8_t condenser,int bits[7]){
 
 
 
-void GR0_humain_vs_humain(){
+void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(GameState*,Color)){
 	Queue territoire1;
 	Queue territoire2;	
 	Queue moves[7];
@@ -215,11 +212,10 @@ void GR0_humain_vs_humain(){
 	initialize(&territoire1, &territoire2,&etat);
 	int fin=0;
 	int coup;
-	uint8_t code_coups;
 	while(fin==0){
 		GR0_plot(&etat);
-		code_coups= GR0_get_move_available(&etat, 1, moves);
-		coup=GR0_get_user_input(1,code_coups);
+		GR0_get_move_available(&etat, 1, moves);
+		coup = decision1(&etat,1);
 		if (coup==-1){
 			fin=2;
 			break;
@@ -228,8 +224,8 @@ void GR0_humain_vs_humain(){
 		GR0_plot(&etat);
 		fin=GR0_partie_finie(&etat, &territoire1, &territoire2);
 		if(fin!=0){break;}
-		code_coups= GR0_get_move_available(&etat, 2, moves);
-		coup=GR0_get_user_input(2,code_coups);
+		GR0_get_move_available(&etat, 2, moves);
+		coup = decision2(&etat,2);
 		if (coup==-1){
 			fin=1;
 			break;
@@ -245,10 +241,26 @@ void GR0_humain_vs_humain(){
 	GR0_free_state(&etat);
 }
 
-int main(int argc, char** argv){
 
-	GR0_humain_vs_humain();
-	
+int main(int argc, char** argv){
+	int game_mode = GR0_gameplay_question();
+	switch (game_mode) {
+		case 1:
+			GR0_Agent_vs_Agent(&GR0_get_user_input,&GR0_get_user_input);
+			break;
+		case 2:
+			GR0_Agent_vs_Agent(&GR0_get_user_input,&GR0_IA_Random);
+			break;
+		case 3:
+			GR0_Agent_vs_Agent(&GR0_IA_Random,&GR0_IA_Random);
+			break;
+		case 4:
+			return 0;
+		default:
+			printf("Mode de jeu inconnu !\n");
+			break;
+	}
+
 	return 0;
 }
 
