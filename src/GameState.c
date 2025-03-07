@@ -45,6 +45,7 @@ Color get_map_value (GameState* state, int x, int y){
 }
 
 void fill_map(GameState* map){
+	printf("Filling map\n");
 	for(int i=0;i<(map->size)*(map->size);i++){
 		map->map[i]=GR0_get_random_scalar(3,9);
 	}
@@ -63,11 +64,12 @@ void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Q
         if (x_ >= 0 && x_ < size && y_ >= 0 && y_ < size) {
             int pos[2] = {x_, y_};
             if (!isinQueue(explored, pos) && !isinQueue(unexplored, pos)) {
-                if (get_map_value(state, x_, y_) == color) {
+                Color c = get_map_value(state, x_, y_);
+				if (c == color) {
                     enqueue(unexplored, pos);
                 }
 				if (SameColor==0) {
-					if(get_map_value(state, x_, y_) != color){enqueue(movements, pos);}
+					if(c != color && c<=9 && c>=3){enqueue(movements, pos);}
                     
                 }
             }
@@ -105,6 +107,7 @@ void GR0_update_map(GameState* state,Queue* network,int player){
 
 void GR0_step(GameState* state ,Queue* coup ,int player){
 	Queue explored;
+	initQueue(&explored);
 	int current[2];
 	while(coup->length!=0){
 		dequeue(coup, current);
@@ -118,6 +121,7 @@ void GR0_step(GameState* state ,Queue* coup ,int player){
 
 int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player){
 	Queue explored;
+	initQueue(&explored);
 	int current[2];
 	while(coup->length!=0){
 		dequeue(coup, current);
@@ -156,28 +160,41 @@ uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]){
 
 
 
-int GR0_partie_finie(GameState* state,Queue* territoire1,Queue* territoire2){
-	//0 si la partie n'est pas finie,1 si 1 a gagné , 2 si 2 a gagné
-	if(territoire1->length>state->size/2){return(1);}
-	else if(territoire2->length>state->size/2){return(2);}
-	else {return(0);}
+int GR0_partie_finie(GameState* state){
+	// 0 si la partie n'est pas finie, 1 si le joueur 1 a gagné, 2 si le joueur 2 a gagné, 3 si match nul
+    const int sizes = state->size;
+    int positio[2] = {0, sizes-1};
+    int positio2[2] = {sizes-1, 0};
+    Queue unexplored;
+    Queue explored;
+	int length1;
+    initQueue(&unexplored);
+    initQueue(&explored);
+    GR0_get_network(state, positio, &explored, &explored);
+    if (explored.length > (sizes * sizes) / 2) {
+        return 1;
+    }
+	length1 = explored.length;
+
+    initQueue(&explored);
+    initQueue(&unexplored);
+    GR0_get_network(state, positio2, &explored, &explored);
+    if (explored.length > (sizes * sizes) / 2) {
+        return 2;
+    } 
+	if (length1 + explored.length == sizes * sizes) {
+		return 3;
+	}
+	return 0;
 }
 
-void initialize(Queue* territoire1,Queue* territoire2,GameState* etat){
+void initialize(GameState* etat){
 	int size;
     srand(time(NULL));
     printf("Donne la taille de la carte que tu souhaites: ");
     scanf("%d", &size);
     
-    // Print the entered number
     printf("La t: %d\n", size);
-	initQueue(territoire1);
-	int position1[2]={0,size-1};
-	int position2[2]={size-1,0};
-	enqueue(territoire1, position1);
-	
-	initQueue(territoire2);
-	enqueue(territoire2, position2);
 
 	create_empty_game_state(etat,size);
 	fill_map(etat);
@@ -206,11 +223,9 @@ void GR0_decondenser(uint8_t condenser,int bits[7]){
 
 
 void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(GameState*,Color)){
-	Queue territoire1;
-	Queue territoire2;	
 	Queue moves[7];
 	GameState etat;
-	initialize(&territoire1, &territoire2,&etat);
+	initialize(&etat);
 	int fin=0;
 	int coup;
 	while(fin==0){
@@ -224,7 +239,7 @@ void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(
 		}
 		GR0_step(&etat, &moves[coup],1);
 		GR0_plot(&etat);
-		fin=GR0_partie_finie(&etat, &territoire1, &territoire2);
+		fin=GR0_partie_finie(&etat);
 		if(fin!=0){break;}
 		GR0_get_move_available(&etat, 2, moves);
 		coup = decision2(&etat,2);
@@ -235,7 +250,7 @@ void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(
 		}
 
 		GR0_step(&etat, &moves[coup],2);
-		fin=GR0_partie_finie(&etat, &territoire1, &territoire2);
+		fin=GR0_partie_finie(&etat);
 	}
 	GR0_plot(&etat);
 	if(fin==1){printf("Le joueur 1 a gagné\n");}
@@ -263,7 +278,7 @@ int main(int argc, char** argv){
 			printf("Mode de jeu inconnu !\n");
 			break;
 	}
-
 	return 0;
 }
 
+//l'algo glouton pete un plomb parfois et décide juste de all in sur rouge meme si il peut meme pas jouer rouge ( c'est indépendant du numéro du joueur)

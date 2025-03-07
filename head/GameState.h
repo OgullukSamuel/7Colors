@@ -51,6 +51,8 @@ uint8_t GR0_condenser(Queue* moves);
 void GR0_decondenser(uint8_t condenser,int bits[7]);
 void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(GameState*,Color));
 
+void initialize(GameState* etat);
+
 int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player);
 
 #endif

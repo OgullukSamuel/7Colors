@@ -18,5 +18,5 @@ void displayQueue(Queue* q);
 void initQueue(Queue* q) ;
 int isinQueue(Queue* q, int value[2]) ;
 void insert_sorted(Queue* q, int (*value)) ;
-int injection(int* values);
+//int injection(int* values);
 #endif

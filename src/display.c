@@ -20,6 +20,7 @@ const char* get_color_code(Color c) {
 }
 
 void GR0_plot(GameState* state) {
+
     printf("┌");
     for (int j = 0; j < state->size; j++) {
         printf("───");
