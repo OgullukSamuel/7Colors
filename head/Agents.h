@@ -8,8 +8,14 @@
 
 Color GR0_IA_Random(GameState* state,Color player);
 
+int max(int a, int b);
 
-Color GR0_Agent_MinMax(GameState* state,Color player);
+int min(int a, int b);
+float exp_approx(float x);
+
+Color GR0_minmax(GameState* state,Color player);
+
+float GR0_alpha_beta_minmax(GameState* state, int depth,float alpha,float beta,Color player,int* best_move);
 
 Color GR0_Glouton(GameState* state,Color player);
 

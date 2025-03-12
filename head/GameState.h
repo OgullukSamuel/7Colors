@@ -46,6 +46,13 @@ void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Q
 
 uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]);
 
+
+GameState GR0_virtual_depth_step(GameState* state ,Queue* coup ,int player,int depth);
+
+GameState GR0_copy_game_state(GameState* original);
+
+int GR0_partie_finie(GameState* state);
+
 uint8_t GR0_condenser(Queue* moves);
 
 void GR0_decondenser(uint8_t condenser,int bits[7]);

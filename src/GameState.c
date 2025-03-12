@@ -131,6 +131,35 @@ int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player){
 }
 
 
+GameState GR0_virtual_depth_step(GameState* state ,Queue* coup ,int player,int depth){
+	GameState new_state=GR0_copy_game_state(state);
+	Queue explored;
+	initQueue(&explored);
+	int current[2];
+	while(coup->length!=0){
+		dequeue(coup, current);
+		GR0_get_network(&new_state, current,  &explored,coup);
+	}
+	GR0_update_map(&new_state, &explored, player);
+	return(new_state);
+
+
+}
+
+GameState GR0_copy_game_state(GameState* original) {
+    GameState copy;
+    copy.size = original->size;
+    copy.map = (Color*)malloc(copy.size * copy.size * sizeof(Color));
+    if (copy.map == NULL) {
+        printf("[ERROR] Memory allocation failed!\n");
+        exit(1);
+    }
+    for (int i = 0; i < copy.size * copy.size; i++) {
+        copy.map[i] = original->map[i];
+    }
+    return copy;
+}
+
 
 uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]){
 	for(int i=0;i<7;i++){
@@ -160,32 +189,26 @@ uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]){
 
 
 
-int GR0_partie_finie(GameState* state){
-	// 0 si la partie n'est pas finie, 1 si le joueur 1 a gagné, 2 si le joueur 2 a gagné, 3 si match nul
-    const int sizes = state->size;
-    int positio[2] = {0, sizes-1};
-    int positio2[2] = {sizes-1, 0};
-    Queue unexplored;
+int GR0_partie_finie(GameState* state) {
+    // 0 : partie non finie, 1 : joueur 1 gagne, 2 : joueur 2 gagne, 3 : match nul
+    const int size = state->size;
+    int pos_j1[2] = {0, size - 1};
+    int pos_j2[2] = {size - 1, 0};
+    int length_j1;
     Queue explored;
-	int length1;
-    initQueue(&unexplored);
+    
     initQueue(&explored);
-    GR0_get_network(state, positio, &explored, &explored);
-    if (explored.length > (sizes * sizes) / 2) {
-        return 1;
-    }
-	length1 = explored.length;
-
+    GR0_get_network(state, pos_j1, &explored, &explored);
+    length_j1 = explored.length;
+    if (length_j1 > (size * size) / 2) {return 1;}
+    
     initQueue(&explored);
-    initQueue(&unexplored);
-    GR0_get_network(state, positio2, &explored, &explored);
-    if (explored.length > (sizes * sizes) / 2) {
-        return 2;
-    } 
-	if (length1 + explored.length == sizes * sizes) {
-		return 3;
-	}
-	return 0;
+    GR0_get_network(state, pos_j2, &explored, &explored);
+    if (explored.length > (size * size) / 2) {return 2;}
+    
+    if (length_j1 + explored.length == size * size) {return 3;}
+    
+    return 0;
 }
 
 void initialize(GameState* etat){
@@ -267,7 +290,7 @@ int main(int argc, char** argv){
 			GR0_Agent_vs_Agent(&GR0_get_user_input,&GR0_get_user_input);
 			break;
 		case 2:
-			GR0_Agent_vs_Agent(&GR0_get_user_input,&GR0_IA_Random);
+			GR0_Agent_vs_Agent(&GR0_get_user_input,&GR0_minmax);
 			break;
 		case 3:
 			GR0_Agent_vs_Agent(&GR0_Glouton,&GR0_Glouton);
