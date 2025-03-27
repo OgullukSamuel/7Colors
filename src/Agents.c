@@ -36,7 +36,7 @@ Color GR0_Glouton(GameState* state,Color player){
 
 Color GR0_minmax3(GameState* state,Color player){
 	int best_move;
-	GR0_alpha_beta_minmax(state, 3, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	GR0_alpha_beta_minmax(state, 1, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
 	Color move = best_move;
 	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
 	
@@ -44,7 +44,7 @@ Color GR0_minmax3(GameState* state,Color player){
 }
 Color GR0_minmax6(GameState* state,Color player){
 	int best_move;
-	GR0_alpha_beta_minmax(state, 6, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	GR0_alpha_beta_minmax(state, 7, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
 	Color move = best_move;
 	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
 	
@@ -107,7 +107,7 @@ float GR0_alpha_beta_minmax(GameState* state, int depth,float alpha,float beta,C
 
 
 float heuristique_minmax(GameState* state){
-	float maxreward=1001;
+	float maxreward=10000;
     const int size = state->size;
     int pos_j1[2] = {0, size - 1};
     int pos_j2[2] = {size - 1, 0};
@@ -123,7 +123,7 @@ float heuristique_minmax(GameState* state){
 		while(explored.length!=0){
 			int current[2];
 			dequeue(&explored,current);
-			score+=heuristique_mask(state,current[0],current[1]);
+			score+=heuristique_mask(state,current[0],current[1],1);
 		}
 	}
 	
@@ -138,20 +138,23 @@ float heuristique_minmax(GameState* state){
 		while(explored.length!=0){
 			int current[2];
 			dequeue(&explored,current);
-			score-=heuristique_mask(state,current[0],current[1]);
+			score-=heuristique_mask(state,current[0],current[1],2);
 		}
 	}
 	return(score);
 
 }
 
-float heuristique_mask(GameState* state,int x, int y){
-	
+float heuristique_mask(GameState* state,int x, int y,Color player){
+
 	float size = state->size;
 	float halfsize =size/2;
 	float a=0.3;
 	float x_=x-halfsize, y_=y-halfsize;
-	return (1+(tanh_approx(2*x_/size)+tanh_approx(-2*y_/size)+exp_approx(-(x_*x_+y_*y_)/(size*size*a*a)))*0.6565);
+	float delta= player==1 ? 1 : -1;
+	return (1+delta*(tanh_approx(2*x_/size)+tanh_approx(-2*y_/size)+delta*exp_approx(-(x_*x_+y_*y_)/(size*size*a*a)))*1.523);
+
+	//return(1);
 }
 
 float heuristique_frontier(GameState* state){
@@ -169,7 +172,7 @@ float heuristique_frontier(GameState* state){
 	return(frontier);
 }
 
-float heuristique_frontier_upgraded(GameState* state) {
+float heuristique_frontier_upgraded(GameState* state){ 
 	Queue moves[7], moves2[7];
 	GR0_get_move_available(state, 1, moves);
 	GR0_get_move_available(state, 2, moves2);
@@ -180,12 +183,12 @@ float heuristique_frontier_upgraded(GameState* state) {
 		while (moves[i].length != 0) {
 			int current[2];
 			dequeue(&moves[i], current);
-			frontier += heuristique_mask(state, current[0], current[1]);
+			frontier += heuristique_mask(state, current[0], current[1],1);
 		}
 		while (moves2[i].length != 0) {
 			int current[2];
 			dequeue(&moves2[i], current);
-			frontier -= heuristique_mask(state, current[0], current[1]);
+			frontier -= heuristique_mask(state, current[0], current[1],2);
 		}
 	}
 

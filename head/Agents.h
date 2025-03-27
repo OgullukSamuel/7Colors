@@ -24,7 +24,7 @@ Color GR0_Glouton(GameState* state,Color player);
 
 float heuristique_minmax(GameState* state);
 
-float heuristique_mask(GameState* state,int x, int y);
+float heuristique_mask(GameState* state,int x, int y,Color player);
 
 Color GR0_frontier_IA1(GameState* state, Color player);
 

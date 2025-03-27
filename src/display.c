@@ -190,7 +190,7 @@ Color GR0_get_user_input(GameState* state,Color player){
 void GR0_question_IA_IA(IAS* ia){
 
 	printf("Agent du joueur 1 : \n");
-    printf("[1] Humain   [2] Random   [3] Glouton   [4] MinMax3   [5] MinMax6   [6] Frontiere1   [7] Frontière5   [8] Frontière5+ heuristique\n");    
+    printf("[1] Humain   [2] Random   [3] Glouton   [4] MinMax3   [5] MinMax6   [6] Frontiere1   [7] Frontière5   [8] Frontière5+ heuristique   [9] ELO classement\n");    
     
     int ia1;
     int idx=0;
@@ -231,6 +231,13 @@ void GR0_question_IA_IA(IAS* ia){
                 ia->decision1 = &GR0_frontier_IA5_heuristique;
                 break;
             
+            case 9:
+                idx=1;
+                ia->decision1 = &GR0_IA_Random;
+                ia->elo=1;
+                return;
+                break;
+
             default:
                 printf("Choix invalide\n");
                 break;

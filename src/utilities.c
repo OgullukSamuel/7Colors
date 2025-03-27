@@ -36,7 +36,7 @@ void GR0_decondenser(uint8_t condenser,int bits[7]){
 
 
 float exp_approx(float x){
-	return(1+x*(1+x/2*(1+x/3*(1+x/4))));
+	return(1/(1-x*(1-x/2)));
 }
 
 float tanh_approx(float x){
