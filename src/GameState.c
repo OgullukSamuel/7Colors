@@ -1,10 +1,10 @@
 #include "../head/GameState.h"
-#include "../head/Agents.h"
 #include "../head/display.h"
 #include "../head/queue.h"
+#include "../head/utilities.h"
 #include <stdio.h>
 
-
+int Size;
 GameState state = {.map = NULL, .size = 0};
 
 void create_empty_game_state (GameState* state, int size){
@@ -36,17 +36,17 @@ void set_map_value (GameState* state, int x, int y, Color value){
 
 
 Color get_map_value (GameState* state, int x, int y){
-	if (state->map == NULL || x >= state->size || y >= state->size || x < 0 || y < 0)
+	if (state->map == NULL || x >= Size || y >= Size || x < 0 || y < 0)
 	{
-		printf("[ERROR] map not big enough or not initialized %p %i access (%i %i)", state -> map, state -> size, x, y);
+		printf("[ERROR] map not big enough or not initialized %p %i access (%i %i)", state -> map, Size, x, y);
 		return ERROR;
 	}
-	return state -> map[x * (state -> size) + y];
+	return state -> map[x * Size + y];
 }
 
 void fill_map(GameState* map){
-	printf("Filling map\n");
-	for(int i=0;i<(map->size)*(map->size);i++){
+	//printf("Filling map\n");
+	for(int i=0;i<Size*Size;i++){
 		map->map[i]=GR0_get_random_scalar(3,9);
 	}
 }
@@ -54,14 +54,13 @@ void fill_map(GameState* map){
 
 
 void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Queue* explored, int SameColor, Queue* movements) {
-    int size = state->size;
     Color color = get_map_value(state, x, y);
     int directions[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
     for (int i = 0; i < 4; i++) {
         int x_ = x + directions[i][0];
         int y_ = y + directions[i][1];
 
-        if (x_ >= 0 && x_ < size && y_ >= 0 && y_ < size) {
+        if (x_ >= 0 && x_ < Size && y_ >= 0 && y_ < Size) {
             int pos[2] = {x_, y_};
             if (!isinQueue(explored, pos) && !isinQueue(unexplored, pos)) {
                 Color c = get_map_value(state, x_, y_);
@@ -131,7 +130,7 @@ int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player){
 }
 
 
-GameState GR0_virtual_depth_step(GameState* state ,Queue* coup ,int player,int depth){
+struct GameState GR0_virtual_depth_step(GameState* state ,Queue* coup ,int player,int depth){
 	GameState new_state=GR0_copy_game_state(state);
 	Queue explored;
 	initQueue(&explored);
@@ -211,62 +210,42 @@ int GR0_partie_finie(GameState* state) {
     return 0;
 }
 
-void initialize(GameState* etat){
-	int size;
-    srand(time(NULL));
-    printf("Donne la taille de la carte que tu souhaites: ");
-    scanf("%d", &size);
-    
-    printf("La t: %d\n", size);
+void GR0_initialize(GameState* etat){
+    srand(time(NULL) ^ clock());
 
-	create_empty_game_state(etat,size);
+	create_empty_game_state(etat,Size);
 	fill_map(etat);
 
-	set_map_value(etat, 0, size-1, 1);
-	set_map_value(etat, size-1, 0, 2);
+	set_map_value(etat, 0, Size-1, 1);
+	set_map_value(etat, Size-1, 0, 2);
 
 }
 
-uint8_t GR0_condenser(Queue* moves){
-	uint8_t result = 0;
-	for(int i=0;i<7;i++){
-		result |= (moves[i].length > 0) << i;
-	}
-	return(result);
-}
-
-void GR0_decondenser(uint8_t condenser,int bits[7]){
-	for (int i = 0; i < 7; i++) {
-		bits[i] = (condenser >> i) & 1;
-	}
-}	
 
 
 
-
-
-void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(GameState*,Color)){
+int GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(GameState*,Color),int affichage){
 	Queue moves[7];
 	GameState etat;
-	initialize(&etat);
+	GR0_initialize(&etat);
 	int fin=0;
 	int coup;
 	while(fin==0){
-		GR0_plot(&etat);
+		if(affichage){GR0_plot(&etat);}
 		GR0_get_move_available(&etat, 1, moves);
 		coup = decision1(&etat,1);
-		printf("coup1 : %d\n",coup);
+		
 		if (coup==-1){
 			fin=2;
 			break;
 		}
 		GR0_step(&etat, &moves[coup],1);
-		GR0_plot(&etat);
+		if(affichage){GR0_plot(&etat);}
 		fin=GR0_partie_finie(&etat);
 		if(fin!=0){break;}
 		GR0_get_move_available(&etat, 2, moves);
 		coup = decision2(&etat,2);
-		printf("coup2 : %d\n",coup);
+		
 		if (coup==-1){
 			fin=1;
 			break;
@@ -275,32 +254,31 @@ void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(
 		GR0_step(&etat, &moves[coup],2);
 		fin=GR0_partie_finie(&etat);
 	}
-	GR0_plot(&etat);
+	if(affichage){GR0_plot(&etat);}
 	if(fin==1){printf("Le joueur 1 a gagné\n");}
 	else if(fin==2){printf("Le joueur 2 a gagné\n");}
-	else{printf("Match nul\n");}
+	else{
+		printf("Match nul\n");
+		fin =3/2;}
 	GR0_free_state(&etat);
+	return(fin);
 }
 
 
+
 int main(int argc, char** argv){
-	int game_mode = GR0_gameplay_question();
-	switch (game_mode) {
-		case 1:
-			GR0_Agent_vs_Agent(&GR0_get_user_input,&GR0_get_user_input);
-			break;
-		case 2:
-			GR0_Agent_vs_Agent(&GR0_get_user_input,&GR0_minmax);
-			break;
-		case 3:
-			GR0_Agent_vs_Agent(&GR0_Glouton,&GR0_Glouton);
-			break;
-		case 4:
-			return 0;
-		default:
-			printf("Mode de jeu inconnu !\n");
-			break;
+
+	IAS ia;
+	GR0_question_IA_IA(&ia);
+	printf("Donne la taille de la carte que tu souhaites: ");
+    scanf("%d", &Size);
+	
+	double sum=0;
+	for(int i=0;i<ia.affrontements;i++){
+		sum+=(float)(2-GR0_Agent_vs_Agent(ia.decision1,ia.decision2,ia.affichage));
 	}
+	double winrate= ((double)sum/ia.affrontements)*100;
+	printf("Winrate du joueur 1 :%.2f %% \n\n", winrate);
 	return 0;
 }
 

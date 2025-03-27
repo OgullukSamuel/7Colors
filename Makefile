@@ -6,7 +6,7 @@ SRC_DIR = src
 OBJ_DIR = o
 HEAD_DIR = head
 
-MODULES = GameState queue display Agents
+MODULES = GameState queue display Agents utilities
 
 OBJ = $(patsubst %, $(OBJ_DIR)/%.o, $(MODULES))
 
@@ -15,7 +15,7 @@ TARGET = 7color
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) -o $(TARGET)
+	$(CC) $(CFLAGS) $(OBJ) -o $(TARGET) -lm
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@

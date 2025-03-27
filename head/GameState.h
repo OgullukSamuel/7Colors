@@ -25,6 +25,13 @@ typedef struct GameState{
 	int size;
 } GameState;
 
+typedef struct IAS{
+	int affrontements;
+	int affichage;
+	Color (*decision1)(GameState*,Color);
+	Color (*decision2)(GameState*,Color);
+} IAS;
+
 
 void create_empty_game_state (GameState* state, int size);
 
@@ -47,18 +54,16 @@ void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Q
 uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]);
 
 
-GameState GR0_virtual_depth_step(GameState* state ,Queue* coup ,int player,int depth);
+
+struct GameState GR0_virtual_depth_step(GameState* state ,Queue* coup ,int player,int depth);
 
 GameState GR0_copy_game_state(GameState* original);
 
 int GR0_partie_finie(GameState* state);
 
-uint8_t GR0_condenser(Queue* moves);
+int GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(GameState*,Color),int affichage);
 
-void GR0_decondenser(uint8_t condenser,int bits[7]);
-void GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(GameState*,Color));
-
-void initialize(GameState* etat);
+void GR0_initialize(GameState* etat);
 
 int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player);
 

@@ -35,11 +35,9 @@ void GR0_plot(GameState* state) {
             const char* text_color = get_color_code(c);          
 			if(c==PLAYER_1){
 				printf("%s%s 1 %s", bg_color, text_color, "\033[0m");	
-			}
-			else if (c==PLAYER_2) {
+			} else if (c==PLAYER_2) {
 				printf("%s%s 2 %s", bg_color, text_color, "\033[0m");
-			}
-            else {
+			} else {
 				printf("%s%s O %s", bg_color, text_color, "\033[0m");
 			}
         }
@@ -79,7 +77,7 @@ const char* get_background_color_code(Color c) {
         default: return "\033[48;5;15m";      // Default white background
     }
 }
-
+/*
 int GR0_gameplay_question(){
     printf("Selectionnez votre mode de jeu :\n");
     printf("[1] Humain vs Humain\n");
@@ -90,7 +88,7 @@ int GR0_gameplay_question(){
     scanf("%d", &choix);
     return choix;
 }
-
+*/
 
 
 
@@ -186,5 +184,108 @@ Color GR0_get_user_input(GameState* state,Color player){
     
 
     return(indx);
+
+}
+
+void GR0_question_IA_IA(IAS* ia){
+
+	printf("Agent du joueur 1 : \n");
+    printf("[1] Humain   [2] Random   [3] Glouton   [4] MinMax3   [5] MinMax6   [6] Frontiere1   [7] Frontière5   [8] Frontière5+ heuristique\n");    
+    
+    int ia1;
+    int idx=0;
+    while(idx==0){
+        scanf("%i", &ia1);
+        switch (ia1){
+            case 1:
+                idx=1;
+                ia->decision1 = &GR0_get_user_input;    
+                break;
+            case 2:
+                idx=1;
+                ia->decision1 = &GR0_IA_Random;    
+                break;
+            case 3:
+                idx=1;
+                ia->decision1 = &GR0_Glouton;
+                break;
+            case 4:
+                idx=1;
+                ia->decision1 = &GR0_minmax3;
+                break;
+            case 5:
+                idx=1;
+                ia->decision1 = &GR0_minmax6;
+                break;
+            case 6:
+                idx=1;
+                ia->decision1 = &GR0_frontier_IA1;
+                break;
+
+            case 7:
+                idx=1;
+                ia->decision1 = &GR0_frontier_IA5;
+                break;
+            case 8:
+                idx=1;
+                ia->decision1 = &GR0_frontier_IA5_heuristique;
+                break;
+            
+            default:
+                printf("Choix invalide\n");
+                break;
+        }
+    }
+    printf("Agent du joueur 2 : \n");
+    printf("[1] Humain   [2] Random   [3] Glouton   [4] MinMax3   [5] MinMax6   [6] Frontiere1   [7] Frontiere5   [8] Frontière5+ heuristique   \n");    
+    idx=0;
+    int ia2;
+    while(idx==0){
+        scanf("%i", &ia2);
+        switch (ia2){
+            case 1:
+                idx=1;
+                ia->decision2 = &GR0_get_user_input;    
+                break;
+            
+            case 2:
+                idx=1;
+                ia->decision2 = &GR0_IA_Random;    
+                break;
+            case 3:
+                idx=1;
+                ia->decision2 = &GR0_Glouton;
+                break;
+            case 4:
+                idx=1;
+                ia->decision2 = &GR0_minmax3;
+                break;
+            case 5:
+                idx=1;
+                ia->decision2 = &GR0_minmax6;
+                break;
+            case 6:
+                idx=1;
+                ia->decision2 = &GR0_frontier_IA1;
+                break;
+
+            case 7:
+                idx=1;
+                ia->decision2 = &GR0_frontier_IA5;
+                break;
+            case 8:
+                idx=1;
+                ia->decision2 = &GR0_frontier_IA5_heuristique;
+                break;
+            default:
+                printf("Choix invalide\n");
+                break;
+        }
+    }
+    printf("Combien d'affrontements souhaites tu voir: ");
+	scanf("%i", &(ia->affrontements));
+	printf("Souhaites-tu un affichage ? (1 pour oui, 0 pour non): ");
+	scanf("%i", &(ia->affichage));
+
 
 }
