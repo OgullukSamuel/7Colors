@@ -1,6 +1,4 @@
 
-#include "../head/Gamestate.h"
-#include <stdio.h>
 #include "../head/display.h"
 const char* get_color_code(Color c) {
     switch(c) {
@@ -96,7 +94,7 @@ Color GR0_get_user_input(GameState* state,Color player){
     Queue moves[7];
     uint8_t condenser=GR0_get_move_available(state, player, moves);
     if (condenser==0){
-        printf("Le joueur %d ne peut pas jouer\n",player);
+        //intf("Le joueur %d ne peut pas jouer\n",player);
         return(-1);
     }
     int disponibilite[7];

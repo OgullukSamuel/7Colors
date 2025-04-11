@@ -1,6 +1,7 @@
 #ifndef QUEUE_H
 #define QUEUE_H
-
+#include <stdint.h>
+#include <stdio.h>
 
 #define SIZE 10000  // Taille maximale de la queue
 

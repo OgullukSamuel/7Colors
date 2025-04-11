@@ -1,11 +1,10 @@
 #include "../head/Agents.h"
-#include "../head/utilities.h"
-#include <stdio.h>
-#include <math.h> // Include math.h for fmax and fmin
+
 
 Color GR0_IA_Random(GameState* state,Color player){
 	Queue moves[7];
 	uint8_t mouvement = GR0_get_move_available(state,player,moves);
+	
 	int idx = GR0_random_bit_index(mouvement);
 	Color coup = idx;
 	return coup;
@@ -14,10 +13,6 @@ Color GR0_IA_Random(GameState* state,Color player){
 Color GR0_Glouton(GameState* state,Color player){
 	Queue moves[7];
 	uint8_t checkvar = GR0_get_move_available(state,player,moves);
-	if (checkvar==0){
-		printf("Le joueur %d ne peut pas jouer\n",player);
-		return(-1);
-	}
 	int max=0;
 	int index=0;
 	int current=0;
@@ -44,7 +39,7 @@ Color GR0_minmax3(GameState* state,Color player){
 }
 Color GR0_minmax6(GameState* state,Color player){
 	int best_move;
-	GR0_alpha_beta_minmax(state, 7, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	GR0_alpha_beta_minmax(state, 8, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
 	Color move = best_move;
 	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
 	
@@ -52,56 +47,75 @@ Color GR0_minmax6(GameState* state,Color player){
 }
 
 
-float GR0_alpha_beta_minmax(GameState* state, int depth,float alpha,float beta,Color player,int* best_move,float (*heuristique)(GameState*)){
-	if (GR0_partie_finie(state) || depth == 0) {
-		return heuristique(state);
-	}
-	int nulpts=-1;
-	int tmp_best_move = -1;
-	if (player == 1) {
-		float max_eval = -10 * (state->size) * (state->size);
-		Queue moves[7];
-		GR0_get_move_available(state, player, moves);
-		for (int i = 0; i < 7; i++) {
-			if (moves[i].length != 0) {
-				GameState new_state = GR0_virtual_depth_step(state, &moves[i], player, depth);
-				float eval = GR0_alpha_beta_minmax(&new_state, depth - 1, alpha, beta, 2,&nulpts,heuristique);
-				GR0_free_state(&new_state);
-				if (eval > max_eval){
-					max_eval = eval;
-					tmp_best_move = i;
-				}
-				alpha = fmax(alpha, eval);
-				if (max_eval >= alpha) {
-					break;
-				}
-			}
-		}
-		*best_move = tmp_best_move;
-		return max_eval;
-	} else {
-		float min_eval = 10 * (state->size) * (state->size);
-		Queue moves[7];
-		GR0_get_move_available(state, player, moves);
-		for (int i = 0; i < 7; i++) {
-			if (moves[i].length != 0) {
-				GameState new_state = GR0_virtual_depth_step(state, &moves[i], player, depth);
-				int nullptr=-1;
-				float eval = GR0_alpha_beta_minmax(&new_state, depth - 1, alpha, beta, 1,&nullptr,heuristique);
-				GR0_free_state(&new_state);
-				if (eval < min_eval){
-					min_eval = eval;
-					tmp_best_move = i;
-				}
-				beta = fmin(beta, eval);
-				if (min_eval <= alpha) {
-					break;
-				}
-			}
-		}
-		*best_move = tmp_best_move;
-		return min_eval;
-	}
+float GR0_alpha_beta_minmax(GameState* state, int depth, float alpha, float beta, Color player, int* best_move, float (*heuristique)(GameState*)) {
+    if (GR0_partie_finie(state) || depth == 0) {
+        return heuristique(state);
+    }
+
+    int tmp_best_move = -1;
+    int stop_flag = 0; // Shared flag to indicate early termination
+
+    if (player == 1) {
+        float max_eval = -10 * (state->size) * (state->size);
+        Queue moves[7];
+        GR0_get_move_available(state, player, moves);
+
+        #pragma omp parallel for shared(alpha, beta, tmp_best_move, max_eval, stop_flag) schedule(dynamic)
+        for (int i = 0; i < 7; i++) {
+            if (stop_flag) continue; // Skip iterations if the flag is set
+
+            if (moves[i].length != 0) {
+                GameState new_state = GR0_virtual_depth_step(state, &moves[i], player);
+                int nulpts = -1;
+                float eval = GR0_alpha_beta_minmax(&new_state, depth - 1, alpha, beta, 2, &nulpts, heuristique);
+                GR0_free_state(&new_state);
+
+                #pragma omp critical
+                {
+                    if (eval > max_eval) {
+                        max_eval = eval;
+                        tmp_best_move = i;
+                    }
+                    alpha = fmax(alpha, eval);
+                    if (max_eval >= beta) {
+                        stop_flag = 1; // Set the flag to terminate other iterations
+                    }
+                }
+            }
+        }
+        *best_move = tmp_best_move;
+        return max_eval;
+    } else {
+        float min_eval = 10 * (state->size) * (state->size);
+        Queue moves[7];
+        GR0_get_move_available(state, player, moves);
+
+        #pragma omp parallel for shared(alpha, beta, tmp_best_move, min_eval, stop_flag) schedule(dynamic)
+        for (int i = 0; i < 7; i++) {
+            if (stop_flag) continue;
+
+            if (moves[i].length != 0) {
+                GameState new_state = GR0_virtual_depth_step(state, &moves[i], player);
+                int nulpts = -1;
+                float eval = GR0_alpha_beta_minmax(&new_state, depth - 1, alpha, beta, 1, &nulpts, heuristique);
+                GR0_free_state(&new_state);
+
+                #pragma omp critical
+                {
+                    if (eval < min_eval) {
+                        min_eval = eval;
+                        tmp_best_move = i;
+                    }
+                    beta = fmin(beta, eval);
+                    if (min_eval <= alpha) {
+                        stop_flag = 1; // Set the flag to terminate other iterations
+                    }
+                }
+            }
+        }
+        *best_move = tmp_best_move;
+        return min_eval;
+    }
 }
     
 
@@ -142,7 +156,6 @@ float heuristique_minmax(GameState* state){
 		}
 	}
 	return(score);
-
 }
 
 float heuristique_mask(GameState* state,int x, int y,Color player){
@@ -152,7 +165,7 @@ float heuristique_mask(GameState* state,int x, int y,Color player){
 	float a=0.3;
 	float x_=x-halfsize, y_=y-halfsize;
 	float delta= player==1 ? 1 : -1;
-	return (1+delta*(tanh_approx(2*x_/size)+tanh_approx(-2*y_/size)+delta*exp_approx(-(x_*x_+y_*y_)/(size*size*a*a)))*1.523);
+	return (1+delta*(tanh_approx(2*x_/size)+tanh_approx(-2*y_/size)+delta*exp_approx(-(x_*x_+y_*y_)/(size*size*a*a)))*1.5);
 
 	//return(1);
 }

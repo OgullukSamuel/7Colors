@@ -1,21 +1,22 @@
-#include <stdio.h>
 #include "../head/queue.h"
 
-
-int injection(int* values){
+/* vieille fonction injection
+static inline int injection(int* values){
     return((values[0]+values[1])*(values[0]+values[1]+1)+values[1]);
+}*/
+
+static inline int injection(int* values) {
+    return (values[0] << 16) | (values[1] & 0xFFFF);
 }
 
 
-
-// Initialisation de la queue
 void initQueue(Queue* q) {
     q->front = 0;
     q->rear = -1;
     q->length = 0;
 }
 
-void insert_sorted(Queue* q, int (*value)) {
+void insert_sorted(Queue* q, int* value) {
     int injected_value = injection(value);  // Obtenir l'injection des deux valeurs
     int left = 0; 
     int right = q->length;
@@ -97,7 +98,6 @@ int isinQueue(Queue* q, int value[2]) {
     return 0;
 }
 
-// Affichage de la queue
 void displayQueue(Queue* q) {
     if (q->length == 0) {
         printf("Queue vide\n");

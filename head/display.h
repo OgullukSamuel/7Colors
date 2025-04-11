@@ -2,6 +2,7 @@
 #define DISPLAY_H
 #include "../head/Gamestate.h"
 #include "../head/Agents.h"
+#include <stdio.h>
 
 const char* get_color_code(Color c);
 

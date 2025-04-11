@@ -1,6 +1,7 @@
 #ifndef AGENTS_H
 #define AGENTS_H
 #include "../head/Gamestate.h"
+#include "../head/map_functions.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,10 +9,7 @@
 #include <math.h>
 
 
-
 Color GR0_IA_Random(GameState* state,Color player);
-
-
 
 Color GR0_minmax3(GameState* state,Color player);
 
@@ -30,6 +28,7 @@ Color GR0_frontier_IA1(GameState* state, Color player);
 
 Color GR0_frontier_IA5(GameState* state, Color player);
 
+void time_function(const char* function_name, void (*function_to_time)(void));
 
 Color GR0_frontier_IA5_heuristique(GameState* state, Color player);
 
