@@ -2,22 +2,36 @@
 #define QUEUE_H
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h> // For dynamic memory allocation
 
-#define SIZE 10000  // Taille maximale de la queue
+#define QUEUE_INIT_CAPACITY 5 
 
 typedef struct {
-    int items[SIZE][2];         // File FIFO stockant des tableaux [x, y]
-    int sorted_values[SIZE];    // Liste triée pour la recherche binaire (basée sur l'injection)
+    int* items;               // Dynamically allocated array for [x, y] pairs
+    int* sorted_values;        // Dynamically allocated array for sorted values
     int front;
-    int rear;            // Indices pour la gestion de la queue
-    int length;                 // Nombre d'éléments dans la queue
+    int rear;                  // Indices for queue management
+    int length;                // Number of elements in the queue
+    int capacity;              // Maximum capacity of the queue
 } Queue;
 
-void enqueue(Queue* q, int* value);
-void dequeue(Queue* q, int* value);
+int injection(int* values);
+void enqueue(Queue* q, int value[2]);
+void dequeue(Queue* q, int value[2]);
 void displayQueue(Queue* q);
-void initQueue(Queue* q) ;
-int isinQueue(Queue* q, int value[2]) ;
-void insert_sorted(Queue* q, int (*value)) ;
-//int injection(int* values);
+void initQueue(Queue* q);
+
+void initQueues(Queue* q);
+void resetQueue(Queue* q);
+
+void resetQueues(Queue* q) ;
+void freeQueues(Queue* q);
+void displayQueue(Queue* q);
+void GR0_resizeQueue(Queue* q);
+void freeQueue(Queue* q); 
+int isinQueue(Queue* q, int value[2]);
+void insert_sorted(Queue* q, int value[2]);
+
+void testQueue() ;
+
 #endif

@@ -36,7 +36,7 @@ void time_function(const char* function_name, void (*function_to_time)(void)) {
     clock_t start_time = clock();
     function_to_time();
     clock_t end_time = clock();
-    double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    double elapsed_time = (double)(end_time - start_time) / (10*CLOCKS_PER_SEC);
     printf("Execution time of %s: %.6f seconds\n", function_name, elapsed_time);
 }
 

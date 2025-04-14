@@ -92,6 +92,7 @@ int GR0_gameplay_question(){
 
 Color GR0_get_user_input(GameState* state,Color player){
     Queue moves[7];
+    initQueues(moves);
     uint8_t condenser=GR0_get_move_available(state, player, moves);
     if (condenser==0){
         //intf("Le joueur %d ne peut pas jouer\n",player);
@@ -100,7 +101,8 @@ Color GR0_get_user_input(GameState* state,Color player){
     int disponibilite[7];
     for(int i=0;i<7;i++){
 		disponibilite[i] = (moves[i].length > 0);
-	}
+	}   
+    freeQueues(moves);
     
     printf("Joueur %d, choisissez une couleur parmi les suivantes :\n", player);
     for(int i = 0; i < 7; i++) {

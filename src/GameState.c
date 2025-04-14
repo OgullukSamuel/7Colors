@@ -2,7 +2,7 @@
 
 void create_empty_game_state (GameState* state, int size){
 	state->size=size;
-	state->map = (Color*)malloc(size * size * sizeof(Color));
+	state->map = malloc(size * size * sizeof(Color));
 	if (state->map == NULL) {
     	printf("[ERREUR] MALLOC A ECHOUE!\n");
     	exit(1);
@@ -24,12 +24,12 @@ void set_map_value (GameState* state, int x, int y, Color value){
 
 
 Color get_map_value (GameState* state, int x, int y){
-	if (state->map == NULL || x >= state->size || y >= state->size || x < 0 || y < 0)
-	{
-		printf("[ERREUR] map not big enough or not initialized %p %i access (%i %i)", state -> map, state->size, x, y);
-		return ERROR;
-	}
-	return state -> map[x * state->size + y];
+    if (state->map == NULL || x >= state->size || y >= state->size || x < 0 || y < 0)
+{
+        printf("[ERREUR] map not big enough or not initialized %p %i access (%i %i)", state -> map, state->size, x, y);
+        return ERROR;
+    }
+    return state->map[x * state->size + y];
 }
 
 void fill_map(GameState* map){

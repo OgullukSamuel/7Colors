@@ -21,8 +21,6 @@ int GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(G
 
 void GR0_initialize(GameState* etat);
 
-int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player);
-
 void GR0_elo_ranking();
 
 void GR0_plot_heuristique_mask(GameState* state);

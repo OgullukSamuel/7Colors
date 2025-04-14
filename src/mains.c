@@ -20,15 +20,16 @@ void GR0_initialize(GameState* etat){
 
 int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)(GameState*, Color), int affichage) {
     Queue moves[7];
+    initQueues(moves);
     GameState etat;
     GR0_initialize(&etat);
 	//GR0_plot_heuristique_mask(&etat);
-    int fin = 0;
+    float fin = 0;
     int coup;
 
     while (fin == 0) {
         if (affichage) { GR0_plot(&etat); }
-
+        resetQueues(moves);
         // Joueur 1
         uint8_t coup_dispo1=GR0_get_move_available(&etat, 1, moves);
         if (coup_dispo1 == 0) {
@@ -36,28 +37,36 @@ int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)
             break;
         }
         coup = decision1(&etat, 1);
+        if (coup == -1) {
+            fin = 2; 
+            break;
+        }
         GR0_step(&etat, &moves[coup], 1);
 
         if (affichage) { GR0_plot(&etat); }
         fin = GR0_partie_finie(&etat);
         if (fin != 0) { break; }
-
+        resetQueues(moves);
         uint8_t coup_dispo2=GR0_get_move_available(&etat, 2, moves);
         if (coup_dispo2 == 0) {
             fin = 1; // Joueur 1 gagne si Joueur 2 ne peut pas jouer
             break;
         }
         coup = decision2(&etat, 2);
+        if (coup == -1) {
+            fin = 1; 
+            break;
+        }
         GR0_step(&etat, &moves[coup], 2);
 
         fin = GR0_partie_finie(&etat);
     }
+    freeQueues(moves);
     if (affichage) { GR0_plot(&etat); }
 
-    if (fin == 3) {
-        fin = 3 / 2;
-    }
+    fin = (fin ==3 ) ? 1.5 : fin;
     GR0_free_state(&etat);
+
     return fin;
 }
 

@@ -3,8 +3,12 @@
 
 Color GR0_IA_Random(GameState* state,Color player){
 	Queue moves[7];
+	initQueues(moves);
 	uint8_t mouvement = GR0_get_move_available(state,player,moves);
-	
+	freeQueues(moves);
+	if(mouvement==0){
+		return(-1);
+	}
 	int idx = GR0_random_bit_index(mouvement);
 	Color coup = idx;
 	return coup;
@@ -12,7 +16,12 @@ Color GR0_IA_Random(GameState* state,Color player){
 
 Color GR0_Glouton(GameState* state,Color player){
 	Queue moves[7];
+	initQueues(moves);
 	uint8_t checkvar = GR0_get_move_available(state,player,moves);
+	if(checkvar==0){
+		freeQueues(moves);
+		return(-1);
+	}
 	int max=0;
 	int index=0;
 	int current=0;
@@ -23,6 +32,7 @@ Color GR0_Glouton(GameState* state,Color player){
 			index=i;
 		}
 	}
+	freeQueues(moves);
 	Color indx = index;
 	return(indx);
 }
@@ -58,6 +68,7 @@ float GR0_alpha_beta_minmax(GameState* state, int depth, float alpha, float beta
     if (player == 1) {
         float max_eval = -10 * (state->size) * (state->size);
         Queue moves[7];
+		initQueues(moves);
         GR0_get_move_available(state, player, moves);
 
         #pragma omp parallel for shared(alpha, beta, tmp_best_move, max_eval, stop_flag) schedule(dynamic)
@@ -83,11 +94,13 @@ float GR0_alpha_beta_minmax(GameState* state, int depth, float alpha, float beta
                 }
             }
         }
+		freeQueues(moves);
         *best_move = tmp_best_move;
         return max_eval;
     } else {
         float min_eval = 10 * (state->size) * (state->size);
         Queue moves[7];
+		initQueues(moves);
         GR0_get_move_available(state, player, moves);
 
         #pragma omp parallel for shared(alpha, beta, tmp_best_move, min_eval, stop_flag) schedule(dynamic)
@@ -113,6 +126,7 @@ float GR0_alpha_beta_minmax(GameState* state, int depth, float alpha, float beta
                 }
             }
         }
+		freeQueues(moves);
         *best_move = tmp_best_move;
         return min_eval;
     }
@@ -121,7 +135,7 @@ float GR0_alpha_beta_minmax(GameState* state, int depth, float alpha, float beta
 
 
 float heuristique_minmax(GameState* state){
-	float maxreward=10000;
+	float maxreward=state->size*state->size*1.5;
     const int size = state->size;
     int pos_j1[2] = {0, size - 1};
     int pos_j2[2] = {size - 1, 0};
@@ -142,7 +156,7 @@ float heuristique_minmax(GameState* state){
 	}
 	
 
-    initQueue(&explored);
+    resetQueue(&explored);
     GR0_get_network(state, pos_j2, &explored, &explored);
     if (explored.length > (size * size) / 2) {
         return -maxreward;
@@ -155,6 +169,7 @@ float heuristique_minmax(GameState* state){
 			score-=heuristique_mask(state,current[0],current[1],2);
 		}
 	}
+	freeQueue(&explored);
 	return(score);
 }
 
@@ -172,21 +187,27 @@ float heuristique_mask(GameState* state,int x, int y,Color player){
 
 float heuristique_frontier(GameState* state){
 	Queue moves[7];
+	initQueues(moves);
 	GR0_get_move_available(state, 1, moves);
 	float frontier=0;
 	for(int i=0;i<7;i++){
 		frontier+=moves[i].length;
 	}
+	freeQueues(moves);
 	Queue moves2[7];
+	initQueues(moves2);
 	GR0_get_move_available(state, 2, moves2);
 	for(int i=0;i<7;i++){
 		frontier-=moves[i].length;
 	}
+	freeQueues(moves2);
 	return(frontier);
 }
 
 float heuristique_frontier_upgraded(GameState* state){ 
 	Queue moves[7], moves2[7];
+	initQueues(moves);
+	initQueues(moves2);
 	GR0_get_move_available(state, 1, moves);
 	GR0_get_move_available(state, 2, moves2);
 
@@ -204,7 +225,8 @@ float heuristique_frontier_upgraded(GameState* state){
 			frontier -= heuristique_mask(state, current[0], current[1],2);
 		}
 	}
-
+	freeQueues(moves);
+	freeQueues(moves2);
 	return frontier;
 }
 
