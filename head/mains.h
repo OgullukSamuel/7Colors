@@ -15,7 +15,7 @@
 #include <stdint.h>
 
 
-
+#define NUM_AGENT 9
 int main(int argc, char** argv);
 int GR0_Agent_vs_Agent(Color (*decision1)(GameState*,Color),Color (*decision2)(GameState*,Color),int affichage);
 

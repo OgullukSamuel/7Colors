@@ -190,48 +190,56 @@ Color GR0_get_user_input(GameState* state,Color player){
 void GR0_question_IA_IA(IAS* ia){
 
 	printf("Agent du joueur 1 : \n");
-    printf("[1] Humain   [2] Random   [3] Glouton   [4] MinMax3   [5] MinMax6   [6] Frontiere1   [7] Frontière5   [8] Frontière5+ heuristique   [9] ELO classement\n");    
+    printf("[0] Humain   [1] Random   [2] Glouton   [3] Glouton Heuristique   [4] MinMax3   [5] MinMax6   [6] Frontière5   [7] Frontière5+heuristique   [6] Hegemonique   [9] Hégémonique Heuristique [A] ELO classement\n");    
     
-    int ia1;
+    char ia1;
     int idx=0;
     while(idx==0){
-        scanf("%i", &ia1);
+        scanf("%c", &ia1);
         switch (ia1){
-            case 1:
+            case '0':
                 idx=1;
                 ia->decision1 = &GR0_get_user_input;    
                 break;
-            case 2:
+            case '1':
                 idx=1;
                 ia->decision1 = &GR0_IA_Random;    
                 break;
-            case 3:
+            case '2':
                 idx=1;
                 ia->decision1 = &GR0_Glouton;
                 break;
-            case 4:
+            case '3':
+                idx=1;
+                ia->decision1 = &GR0_Glouton_heuristique;
+                break;
+            case '4':
                 idx=1;
                 ia->decision1 = &GR0_minmax3;
                 break;
-            case 5:
+            case '5':
                 idx=1;
                 ia->decision1 = &GR0_minmax6;
                 break;
-            case 6:
-                idx=1;
-                ia->decision1 = &GR0_frontier_IA1;
-                break;
-
-            case 7:
+            case '6':
                 idx=1;
                 ia->decision1 = &GR0_frontier_IA5;
                 break;
-            case 8:
+            case '7':
                 idx=1;
                 ia->decision1 = &GR0_frontier_IA5_heuristique;
                 break;
             
-            case 9:
+            case '8' :
+                idx=1;
+                ia->decision1 = &GR0_hegemonique_heuristique;
+                break;
+            
+            case '9':
+                idx=1;
+                ia->decision1 = &GR0_hegemonique;
+                break;
+            case 'a':
                 idx=1;
                 ia->decision1 = &GR0_IA_Random;
                 ia->elo=1;
@@ -244,24 +252,28 @@ void GR0_question_IA_IA(IAS* ia){
         }
     }
     printf("Agent du joueur 2 : \n");
-    printf("[1] Humain   [2] Random   [3] Glouton   [4] MinMax3   [5] MinMax6   [6] Frontiere1   [7] Frontiere5   [8] Frontière5+ heuristique   \n");    
+    printf("[0] Humain   [1] Random   [2] Glouton   [3] Glouton Heuristique   [4] MinMax3   [5] MinMax6   [6] Frontière5   [7] Frontière5+heuristique   [6] Hegemonique   [9] Hégémonique Heuristique\n");    
     idx=0;
     int ia2;
     while(idx==0){
         scanf("%i", &ia2);
         switch (ia2){
-            case 1:
+            case 0:
                 idx=1;
                 ia->decision2 = &GR0_get_user_input;    
                 break;
             
-            case 2:
+            case 1:
                 idx=1;
                 ia->decision2 = &GR0_IA_Random;    
                 break;
-            case 3:
+            case 2:
                 idx=1;
                 ia->decision2 = &GR0_Glouton;
+                break;
+            case 3:
+                idx=1;
+                ia->decision2 = &GR0_Glouton_heuristique;
                 break;
             case 4:
                 idx=1;
@@ -271,19 +283,24 @@ void GR0_question_IA_IA(IAS* ia){
                 idx=1;
                 ia->decision2 = &GR0_minmax6;
                 break;
-            case 6:
-                idx=1;
-                ia->decision2 = &GR0_frontier_IA1;
-                break;
 
-            case 7:
+            case 6:
                 idx=1;
                 ia->decision2 = &GR0_frontier_IA5;
                 break;
-            case 8:
+            case 7:
                 idx=1;
                 ia->decision2 = &GR0_frontier_IA5_heuristique;
                 break;
+            case 9:
+                idx=1;
+                ia->decision2 = &GR0_hegemonique;
+                break;
+            case 8:
+                idx=1;
+                ia->decision2 = &GR0_hegemonique_heuristique;
+                break;
+            
             default:
                 printf("Choix invalide\n");
                 break;

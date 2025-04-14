@@ -12,7 +12,7 @@ void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Q
 
 uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]);
 
-struct GameState GR0_virtual_depth_step(GameState* state ,Queue* coup ,int player);
+GameState GR0_virtual_depth_step(GameState* state ,Queue* coup ,int player);
 
 GameState GR0_copy_game_state(GameState* original);
 

@@ -39,14 +39,25 @@ Color GR0_Glouton(GameState* state,Color player){
 
 
 
-Color GR0_minmax3(GameState* state,Color player){
+Color GR0_Glouton_heuristique(GameState* state,Color player){
 	int best_move;
 	GR0_alpha_beta_minmax(state, 1, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
 	Color move = best_move;
 	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
-	
 	return move;
 }
+
+
+
+Color GR0_minmax3(GameState* state,Color player){
+	int best_move;
+	GR0_alpha_beta_minmax(state, 3, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	Color move = best_move;
+	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
+	return move;
+}
+
+
 Color GR0_minmax6(GameState* state,Color player){
 	int best_move;
 	GR0_alpha_beta_minmax(state, 8, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
@@ -231,27 +242,100 @@ float heuristique_frontier_upgraded(GameState* state){
 }
 
 
-Color GR0_frontier_IA1(GameState* state, Color player){
-	int best_move;
-	GR0_alpha_beta_minmax(state, 1, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_frontier);  
-	Color move = best_move;
-	
-	return move;
-}
-
-Color GR0_frontier_IA5(GameState* state, Color player){
-	int best_move;
-	GR0_alpha_beta_minmax(state, 5, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_frontier);  
-	Color move = best_move;
-	
-	return move;
-}
-
-
 Color GR0_frontier_IA5_heuristique(GameState* state, Color player){
 	int best_move;
-	GR0_alpha_beta_minmax(state, 5, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_frontier);  
+	GR0_alpha_beta_minmax(state, 6, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_frontier_upgraded);  
 	Color move = best_move;
-	
 	return move;
+}
+Color GR0_frontier_IA5(GameState* state, Color player){
+	int best_move;
+	GR0_alpha_beta_minmax(state, 6, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_frontier);  
+	Color move = best_move;
+	return move;
+}
+
+Color GR0_hegemonique(GameState* state, Color player){
+	Queue moves[7];
+	initQueues(moves);
+	uint8_t checkvar = GR0_get_move_available(state,player,moves);
+	if(checkvar==0){
+		freeQueues(moves);
+		return(-1);
+	}
+
+	int cases_atteignables=0;
+	for(int i=0;i<7;i++){
+		cases_atteignables+=moves[i].length;
+	}
+	int max=0;
+	int index=0;
+	int current=0;
+	for(int i=0;i<7;i++){
+		current=0;
+		GameState new_state = GR0_virtual_depth_step(state, &moves[i], player);
+		resetQueues(moves);	
+		GR0_get_move_available(&new_state, player, moves);
+		for(int i=0;i<7;i++){
+			current+=moves[i].length;
+		}
+		if(current>max){
+			max=current;
+			index=i;
+		}
+	}
+	freeQueues(moves);
+	if(max>cases_atteignables){
+		Color indx = index;
+		return(indx);		
+	}else {
+		return(GR0_Glouton(state,player));
+	}
+}
+
+
+Color GR0_hegemonique_heuristique(GameState* state, Color player){
+	Queue moves[7];
+	initQueues(moves);
+	uint8_t checkvar = GR0_get_move_available(state,player,moves);
+	if(checkvar==0){
+		freeQueues(moves);
+		return(-1);
+	}
+
+	int cases_atteignables=0;
+	for(int i=0;i<7;i++){
+		for(int j=0;j<moves[i].length;j++){
+			int current[2];
+			dequeue(&moves[i],current);
+			cases_atteignables+=heuristique_mask(state,current[0],current[1],player);
+		}
+	}
+	int max=0;
+	int index=0;
+	int current=0;
+	for(int i=0;i<7;i++){
+		current=0;
+		GameState new_state = GR0_virtual_depth_step(state, &moves[i], player);
+		resetQueues(moves);	
+		GR0_get_move_available(&new_state, player, moves);
+		for(int i=0;i<7;i++){
+			for(int j=0;j<moves[i].length;j++){
+				int current_pos[2];
+				dequeue(&moves[i],current_pos);
+				current+=heuristique_mask(state,current_pos[0],current_pos[1],player);
+			}
+		}
+		if(current>max){
+			max=current;
+			index=i;
+		}
+	}
+	freeQueues(moves);
+	if(max>cases_atteignables){
+		Color indx = index;
+		return(indx);		
+	}else {
+		return(GR0_Glouton_heuristique(state,player));
+	}
 }

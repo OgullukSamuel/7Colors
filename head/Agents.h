@@ -24,12 +24,16 @@ float heuristique_minmax(GameState* state);
 
 float heuristique_mask(GameState* state,int x, int y,Color player);
 
-Color GR0_frontier_IA1(GameState* state, Color player);
-
 Color GR0_frontier_IA5(GameState* state, Color player);
+
+
+Color GR0_Glouton_heuristique(GameState* state,Color player);
 
 void time_function(const char* function_name, void (*function_to_time)(void));
 
 Color GR0_frontier_IA5_heuristique(GameState* state, Color player);
 
+Color GR0_hegemonique(GameState* state, Color player);
+
+Color GR0_hegemonique_heuristique(GameState* state, Color player);
 #endif

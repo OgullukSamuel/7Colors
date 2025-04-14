@@ -1,6 +1,7 @@
 #include "../head/mains.h"
 
 int Size;
+
 GameState state = {.map = NULL, .size = 0};
 
 
@@ -71,12 +72,13 @@ int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)
 }
 
 void GR0_elo_ranking() {
-    func_ptr func_array[7] = {&GR0_IA_Random, &GR0_Glouton, &GR0_minmax3, &GR0_minmax6, &GR0_frontier_IA1, &GR0_frontier_IA5, &GR0_frontier_IA5_heuristique};
-    float elos[7];
-    int matches[7] = {0};
+    
+    func_ptr func_array[NUM_AGENT] = {&GR0_IA_Random, &GR0_Glouton,&GR0_Glouton_heuristique, &GR0_minmax3, &GR0_minmax6, &GR0_frontier_IA5, &GR0_frontier_IA5_heuristique,&GR0_hegemonique, &GR0_hegemonique_heuristique};
+    float elos[NUM_AGENT];
+    int matches[NUM_AGENT] = {0};
     const int nb_parties = 10000;
 
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < NUM_AGENT; i++) {
         elos[i] = 1500;
     }
 
@@ -85,10 +87,10 @@ void GR0_elo_ranking() {
         if (i % 1000 == 0) {
             printf("Partie %d sur %d\n", i, nb_parties);
         }
-        int j1 = GR0_get_random_scalar(0, 6);
+        int j1 = GR0_get_random_scalar(0, NUM_AGENT - 1);
         int j2;
         do {
-            j2 = GR0_get_random_scalar(0, 6);
+            j2 = GR0_get_random_scalar(0, NUM_AGENT - 1);
         } while (j1 == j2);
 
         float elo_j1, elo_j2, D, prob_j1, prob_j2, match_result, K1, K2;
@@ -118,7 +120,7 @@ void GR0_elo_ranking() {
         }
     }
 
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < NUM_AGENT; i++) {
         printf("Elo du joueur %d : %.2f (matches joués : %d)\n", i + 1, elos[i], matches[i]);
     }
 }
@@ -130,9 +132,11 @@ void time_GR0_elo_ranking() {
 int main(int argc, char** argv){
 	IAS ia;
 	GR0_question_IA_IA(&ia);
-	printf("Donne la taille de la carte que tu souhaites: ");
-    scanf("%d", &Size);
-	if(ia.elo==1){
+    do{printf("Donne la taille de la carte que tu souhaites (entre 3 et 100): ");
+        scanf("%d", &Size);
+    }while(Size<3 || Size>100);
+	
+    if(ia.elo==1){
 		time_function("GR0_elo_ranking", time_GR0_elo_ranking);
 	}
 	else{

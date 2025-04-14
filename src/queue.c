@@ -83,8 +83,6 @@ void insert_sorted(Queue* q, int value[2]) {
     int injected_value = injection(value);
     int left = 0; 
     int right = q->length;
-
-    // Recherche binaire pour insérer l'élément dans la bonne position
     while (left < right) {
         int mid = (left + right) / 2;
         if (q->sorted_values[mid] < injected_value)
@@ -92,14 +90,11 @@ void insert_sorted(Queue* q, int value[2]) {
         else
             right = mid;
     }
-
-    // Vérifier si la capacité est suffisante
     if (q->length == q->capacity) {
         printf("[ERROR] Not enough capacity in sorted_values array\n");
         exit(1);
     }
 
-    // Décaler les éléments pour insérer la nouvelle valeur
     for (int i = q->length; i > left; i--) {
         q->sorted_values[i] = q->sorted_values[i - 1];
     }
@@ -150,7 +145,6 @@ void dequeue(Queue* q, int value[2]) {
     }
 }
 
-// Recherche dichotomique en O(log(n)) dans le tableau trié
 int isinQueue(Queue* q, int value[2]) {
     if (q->length == 0) return 0;
     int injected_value = injection(value);
@@ -187,7 +181,6 @@ void resetQueue(Queue* q) {
     q->rear = -1;
     q->capacity = QUEUE_INIT_CAPACITY;
 
-    // Reallocate items array
     q->items = realloc(q->items, q->capacity * sizeof(int) * 2);
     if (!q->items) {
         printf("[ERROR] Memory reallocation failed for items in resetQueue\n");
@@ -197,7 +190,6 @@ void resetQueue(Queue* q) {
         q->items[i] = -1;
     }
 
-    // Reallocate sorted_values array
     q->sorted_values = realloc(q->sorted_values, q->capacity * sizeof(int));
     if (!q->sorted_values) {
         printf("[ERROR] Memory reallocation failed for sorted_values in resetQueue\n");
