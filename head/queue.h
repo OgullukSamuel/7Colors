@@ -32,6 +32,9 @@ void freeQueue(Queue* q);
 int isinQueue(Queue* q, int value[2]);
 void insert_sorted(Queue* q, int value[2]);
 
+void concatenateQueue(Queue* queue1, Queue* queue2);
+void freeQueue(Queue* q);
+Queue* copyQueue(Queue* original);
 void testQueue() ;
 
 #endif

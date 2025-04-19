@@ -17,6 +17,8 @@ uint8_t GR0_condenser(Queue* moves);
 
 void GR0_decondenser(uint8_t condenser,int bits[7]);
 
+float clip(float value, float min, float max) ;
+
 float exp_approx(float x);
 float tanh_approx(float x);
 

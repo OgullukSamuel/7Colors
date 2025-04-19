@@ -38,3 +38,15 @@ void fill_map(GameState* map){
 	}
 }
 
+void GR0_initialize(GameState* etat, int grid_size) {
+    if (etat->map != NULL) {
+        GR0_free_state(etat); // Libérer la grille précédente si elle existe
+    }
+    srand(time(NULL) ^ clock());
+
+	create_empty_game_state(etat,grid_size);
+	fill_map(etat);
+
+	set_map_value(etat, 0, grid_size-1, 1);
+	set_map_value(etat, grid_size-1, 0, 2);
+}

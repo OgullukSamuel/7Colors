@@ -219,7 +219,7 @@ void GR0_question_IA_IA(IAS* ia){
                 break;
             case '5':
                 idx=1;
-                ia->decision1 = &GR0_minmax6;
+                ia->decision1 = &GR0_minmax8;
                 break;
             case '6':
                 idx=1;
@@ -252,7 +252,7 @@ void GR0_question_IA_IA(IAS* ia){
         }
     }
     printf("Agent du joueur 2 : \n");
-    printf("[0] Humain   [1] Random   [2] Glouton   [3] Glouton Heuristique   [4] MinMax3   [5] MinMax6   [6] Frontière5   [7] Frontière5+heuristique   [6] Hegemonique   [9] Hégémonique Heuristique\n");    
+    printf("[0] Humain   [1] Random   [2] Glouton   [3] Glouton Heuristique   [4] MinMax3   [5] MinMax6   [6] Frontière5   [7] Frontière5+heuristique   [8] Hegemonique   [9] Hégémonique Heuristique\n");    
     idx=0;
     int ia2;
     while(idx==0){

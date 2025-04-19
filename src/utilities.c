@@ -16,7 +16,11 @@ int GR0_random_bit_index(uint8_t n) {
     return indices[rand() % count];
 }
 
-
+float clip(float value, float min, float max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
 
 inline uint8_t GR0_condenser(Queue* moves){
 	uint8_t result = 0;

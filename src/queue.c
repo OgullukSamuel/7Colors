@@ -4,15 +4,61 @@ int injection(int* values){
     return((values[0]+values[1])*(values[0]+values[1]+1)+values[1]);
 }
 
-/*
-int injection(int a, int b) {
-    return a * 73856093 ^ b * 19349663;
-}*/
 
 /*
 int injection(int* values) {
     return (values[0] << 16) | (values[1] & 0xFFFF);
 }*/
+
+void concatenateQueue(Queue* queue1, Queue* queue2){
+    //on copie la queue 2 dans la queue 1
+    Queue* queue3=copyQueue(queue2);
+    for(int i=0; i<queue3->length; i++){
+        int value[2];
+        dequeue(queue3, value);
+        enqueue(queue1, value);
+    }
+}
+
+Queue* copyQueue(Queue* original) {
+    // Allocate memory for the new queue
+    Queue* copy = malloc(sizeof(Queue));
+    if (!copy) {
+        printf("[ERROR] Memory allocation failed in copyQueue\n");
+        exit(1);
+    }
+
+    // Initialize the new queue
+    initQueue(copy);
+
+    // Resize the new queue to match the original queue's capacity
+    copy->capacity = original->capacity;
+    copy->length = original->length;
+    copy->front = original->front;
+    copy->rear = original->rear;
+
+    // Allocate memory for items and sorted_values
+    copy->items = malloc(copy->capacity * sizeof(int) * 2);
+    copy->sorted_values = malloc(copy->capacity * sizeof(int));
+    if (!copy->items || !copy->sorted_values) {
+        printf("[ERROR] Memory allocation failed in copyQueue\n");
+        freeQueue(copy);
+        free(copy);
+        exit(1);
+    }
+
+    // Copy the items array
+    for (int i = 0; i < copy->capacity * 2; i++) {
+        copy->items[i] = original->items[i];
+    }
+
+    // Copy the sorted_values array
+    for (int i = 0; i < copy->capacity; i++) {
+        copy->sorted_values[i] = original->sorted_values[i];
+    }
+
+    return copy;
+}
 
 void GR0_resizeQueue(Queue* q) {
     int old_capacity = q->capacity;

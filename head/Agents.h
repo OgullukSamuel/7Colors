@@ -11,10 +11,23 @@
 
 Color GR0_IA_Random(GameState* state,Color player);
 
+
+Color GR0_minmax1(GameState* state,Color player);
+
+Color GR0_minmax2(GameState* state,Color player);
+
 Color GR0_minmax3(GameState* state,Color player);
 
+Color GR0_minmax4(GameState* state,Color player);
+
+Color GR0_minmax5(GameState* state,Color player);
 Color GR0_minmax6(GameState* state,Color player);
 
+Color GR0_minmax7(GameState* state,Color player);
+
+Color GR0_minmax8(GameState* state,Color player);
+
+float GR0_minmax8_evaluation(GameState* state,Color player);
 
 float GR0_alpha_beta_minmax(GameState* state, int depth,float alpha,float beta,Color player,int* best_move, float(*heuristique)(GameState*));
 

@@ -47,7 +47,21 @@ Color GR0_Glouton_heuristique(GameState* state,Color player){
 	return move;
 }
 
+Color GR0_minmax1(GameState* state,Color player){
+	int best_move;
+	GR0_alpha_beta_minmax(state, 1, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	Color move = best_move;
+	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
+	return move;
+}
 
+Color GR0_minmax2(GameState* state,Color player){
+	int best_move;
+	GR0_alpha_beta_minmax(state, 2, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	Color move = best_move;
+	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
+	return move;
+}
 
 Color GR0_minmax3(GameState* state,Color player){
 	int best_move;
@@ -57,14 +71,53 @@ Color GR0_minmax3(GameState* state,Color player){
 	return move;
 }
 
+Color GR0_minmax4(GameState* state,Color player){
+	int best_move;
+	GR0_alpha_beta_minmax(state, 4, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	Color move = best_move;
+	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
+	return move;
+}
+
+Color GR0_minmax5(GameState* state,Color player){
+	int best_move;
+	GR0_alpha_beta_minmax(state, 5, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	Color move = best_move;
+	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
+	return move;
+}
 
 Color GR0_minmax6(GameState* state,Color player){
 	int best_move;
-	GR0_alpha_beta_minmax(state, 8, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	GR0_alpha_beta_minmax(state, 6, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
 	Color move = best_move;
 	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
 	
 	return move;
+}
+
+Color GR0_minmax7(GameState* state,Color player){
+	int best_move;
+	GR0_alpha_beta_minmax(state, 7, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	Color move = best_move;
+	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
+	return move;
+}
+
+Color GR0_minmax8(GameState* state,Color player){
+	int best_move;
+	GR0_alpha_beta_minmax(state, 8, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	Color move = best_move;
+	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
+	return move;
+}
+
+float GR0_minmax8_evaluation(GameState* state,Color player){
+	int best_move;
+	float eval=GR0_alpha_beta_minmax(state, 8, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_minmax);  
+	//printf("Joueur : %i Evaluation : %f et coup joué %d \n", player,eval, best_move+3);
+	
+	return eval;
 }
 
 
@@ -244,7 +297,7 @@ float heuristique_frontier_upgraded(GameState* state){
 
 Color GR0_frontier_IA5_heuristique(GameState* state, Color player){
 	int best_move;
-	GR0_alpha_beta_minmax(state, 6, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_frontier_upgraded);  
+	GR0_alpha_beta_minmax(state, 8, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&heuristique_frontier_upgraded);  
 	Color move = best_move;
 	return move;
 }
