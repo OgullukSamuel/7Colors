@@ -12,3 +12,4 @@ Le dossier suivant contient les éléments suivants:
 A ces fichiers s'ajoutent leurs entêtes, la police d'écriture Arial, utilisée pour les écritures dans le mode graphique, ainsi qu'un makefile. Ce makefile permet de créer un executable, appelé :"execute_moi" qui contient le programme et ses deux modes d'utilisation.
 
 Bon jeu !
+![Capture d’écran 2025-04-20 021827](https://github.com/user-attachments/assets/c59c5d0d-f7fc-4e51-8fa5-758024b90f7d)
