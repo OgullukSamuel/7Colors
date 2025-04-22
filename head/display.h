@@ -4,11 +4,11 @@
 #include "../head/Agents.h"
 #include <stdio.h>
 
-const char* get_color_code(Color c);
+const char* GR0_get_color_code(Color c);
 
 void GR0_plot(GameState* state) ;
 
-const char* get_background_color_code(Color c) ;
+const char* GR0_get_background_color_code(Color c) ;
 
 int GR0_gameplay_question();
 

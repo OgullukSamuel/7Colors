@@ -1,6 +1,6 @@
 
 #include "../head/display.h"
-const char* get_color_code(Color c) {
+const char* GR0_get_color_code(Color c) {
     switch(c) {
         case ERROR: return "\033[31m";   // Red for ERROR
         case EMPTY: return "\033[37m";   // White for EMPTY
@@ -29,8 +29,8 @@ void GR0_plot(GameState* state) {
         printf("│"); 
         for (int j = 0; j < state->size; j++) {
             Color c = state->map[state->size * i + j];
-            const char* bg_color = get_background_color_code(c); 
-            const char* text_color = get_color_code(c);          
+            const char* bg_color = GR0_get_background_color_code(c); 
+            const char* text_color = GR0_get_color_code(c);          
 			if(c==PLAYER_1){
 				printf("%s%s 1 %s", bg_color, text_color, "\033[0m");	
 			} else if (c==PLAYER_2) {
@@ -59,7 +59,7 @@ void GR0_plot(GameState* state) {
     printf("\033[0m");
 }
 
-const char* get_background_color_code(Color c) {
+const char* GR0_get_background_color_code(Color c) {
     switch(c) {
         case ERROR: return "\033[48;5;1m";    // Red background for ERROR
         case EMPTY: return "\033[48;5;15m";   // White background for EMPTY
@@ -92,7 +92,7 @@ int GR0_gameplay_question(){
 
 Color GR0_get_user_input(GameState* state,Color player){
     Queue moves[7];
-    initQueues(moves);
+    GR0_initQueues(moves);
     uint8_t condenser=GR0_get_move_available(state, player, moves);
     if (condenser==0){
         //intf("Le joueur %d ne peut pas jouer\n",player);
@@ -102,7 +102,7 @@ Color GR0_get_user_input(GameState* state,Color player){
     for(int i=0;i<7;i++){
 		disponibilite[i] = (moves[i].length > 0);
 	}   
-    freeQueues(moves);
+    GR0_freeQueues(moves);
     
     printf("Joueur %d, choisissez une couleur parmi les suivantes :\n", player);
     for(int i = 0; i < 7; i++) {

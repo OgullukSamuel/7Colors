@@ -29,7 +29,7 @@ SDL_Color colors[COLOR_COUNT + 1] = {
     {255, 255, 255, 255}    // 9 - Blanc
 };
 
-SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color) {
+SDL_Texture* GR0_renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color) {
     SDL_Surface* surface = TTF_RenderUTF8_Blended(font, text, color);
     if (!surface) {
         SDL_Log("Erreur TTF_RenderUTF8_Blended : %s", TTF_GetError());
@@ -44,8 +44,8 @@ SDL_Texture* renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text
 }
 
 
-void draw_text(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color, int x, int y) {
-    SDL_Texture* texture = renderText(renderer, font, text, color);
+void GR0_draw_text(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color, int x, int y) {
+    SDL_Texture* texture = GR0_renderText(renderer, font, text, color);
     if (!texture) return; // Ne rien faire si la texture est NULL
 
     int texW = 0, texH = 0;
@@ -55,29 +55,29 @@ void draw_text(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Col
     SDL_DestroyTexture(texture);
 }
 
-int in_rect(int x, int y, SDL_Rect rect) {
+int GR0_in_rect(int x, int y, SDL_Rect rect) {
     return (x >= rect.x && x <= rect.x + rect.w &&
             y >= rect.y && y <= rect.y + rect.h);
 }
 
-void update_cursor(GameState* etat,int current_player, int* cursor_position, int cursor_active) {
+void GR0_update_cursor(GameState* etat,int current_player, int* cursor_position, int cursor_active) {
     if (cursor_active) {
         float evaluation= GR0_minmax8_evaluation(etat,current_player);
         printf("Evaluation : %f\n", evaluation);
         float maxreward=etat->size*etat->size;
-        *cursor_position = clip(evaluation*100/maxreward,-100,100);
+        *cursor_position = GR0_clip(evaluation*100/maxreward,-100,100);
     }
 }
 
-void handle_grid_click(int mouseX, int mouseY, Queue* moves,int* current_player, GameState* etat, int agent, int* winner, int* cursor_position, int cursor_active,func_ptr FUNC_ARRAY[NUM_AGENT]) {
+void GR0_handle_grid_click(int mouseX, int mouseY, Queue* moves,int* current_player, GameState* etat, int agent, int* winner, int* cursor_position, int cursor_active,func_ptr FUNC_ARRAY[NUM_AGENT]) {
 
     int gy = (mouseX - GRID_OFFSET_X) / CELL_SIZE;
     int gx = (mouseY - GRID_OFFSET_Y) / CELL_SIZE;
-    resetQueues(moves);
+    GR0_resetQueues(moves);
     GR0_get_move_available(etat, *current_player, moves);
     int coup_dispo = -1;
     for(int i=0;i<7;i++){
-        if(isinQueue(&moves[i],(int[2]){gx,gy})){
+        if(GR0_isinQueue(&moves[i],(int[2]){gx,gy})){
             coup_dispo = i;
             printf("Case (%d,%d) disponible pour le joueur, couleur %d %d\n", gx, gy, *current_player, i);
             break;
@@ -86,7 +86,7 @@ void handle_grid_click(int mouseX, int mouseY, Queue* moves,int* current_player,
 
     if (coup_dispo!=-1) {
         GR0_step(etat, &moves[coup_dispo], *current_player);
-        update_cursor(etat,*current_player, cursor_position, cursor_active);
+        GR0_update_cursor(etat,*current_player, cursor_position, cursor_active);
         int fin = GR0_partie_finie(etat);
         
         if (fin != 0) {
@@ -100,7 +100,7 @@ void handle_grid_click(int mouseX, int mouseY, Queue* moves,int* current_player,
         printf("agent %d\n", agent);
         *current_player= (*current_player==1)?2 :1;
         if(*current_player == 2 && agent!=-1){
-            resetQueues(moves);
+            GR0_resetQueues(moves);
             GR0_get_move_available(etat, 2, moves);
             Color coup= FUNC_ARRAY[agent](etat, 2);
             if (coup == -1) {
@@ -108,7 +108,7 @@ void handle_grid_click(int mouseX, int mouseY, Queue* moves,int* current_player,
             } else {
                 printf("Coup de l'agent %d : (%d, %d)\n", agent, gx, gy);
                 GR0_step(etat, &moves[coup], 2);
-                update_cursor(etat,*current_player, cursor_position, cursor_active);
+                GR0_update_cursor(etat,*current_player, cursor_position, cursor_active);
                 int fin = GR0_partie_finie(etat);
                 if (fin != 0) {
                     if(fin!=3){
@@ -124,7 +124,7 @@ void handle_grid_click(int mouseX, int mouseY, Queue* moves,int* current_player,
     }
 }
 
-void draw_cursor(SDL_Renderer* renderer, int position, int cursor_active, SDL_Color colors[COLOR_COUNT]) {
+void GR0_draw_cursor(SDL_Renderer* renderer, int position, int cursor_active, SDL_Color colors[COLOR_COUNT]) {
     if (!cursor_active) return;
 
     // Limites du curseur
@@ -168,19 +168,19 @@ void draw_cursor(SDL_Renderer* renderer, int position, int cursor_active, SDL_Co
     }
 
     SDL_Color textColor = {255, 255, 255, 255}; // Blanc
-    draw_text(renderer, font, "100", textColor, cursor_x + cursor_width / 2, GRID_OFFSET_Y - 10); // En haut
-    draw_text(renderer, font, "-100", textColor, cursor_x + cursor_width / 2, WINDOW_HEIGHT - GRID_OFFSET_Y + 10); // En bas
+    GR0_draw_text(renderer, font, "100", textColor, cursor_x + cursor_width / 2, GRID_OFFSET_Y - 10); // En haut
+    GR0_draw_text(renderer, font, "-100", textColor, cursor_x + cursor_width / 2, WINDOW_HEIGHT - GRID_OFFSET_Y + 10); // En bas
 
     TTF_CloseFont(font); // Fermer la police
 }
-void draw_button(SDL_Renderer* renderer, SDL_Rect rect, const char* label, SDL_Color color) {
+void GR0_draw_button(SDL_Renderer* renderer, SDL_Rect rect, const char* label, SDL_Color color) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderFillRect(renderer, &rect);
 }
 
 
 
-void draw_slider(SDL_Renderer* renderer, int value) {
+void GR0_draw_slider(SDL_Renderer* renderer, int value) {
     // Ligne
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
     SDL_Rect line = {SLIDER_X, SLIDER_Y, SLIDER_WIDTH, SLIDER_HEIGHT};
@@ -198,42 +198,42 @@ void draw_slider(SDL_Renderer* renderer, int value) {
 
 
 
-void draw_menu(SDL_Renderer* renderer, TTF_Font* font, int grid_size) {
+void GR0_draw_menu(SDL_Renderer* renderer, TTF_Font* font, int grid_size) {
     SDL_Rect startBtn = {300, 150, 200, 60};
     SDL_Rect opponentBtn = {300, 240, 200, 60};
     SDL_Rect quitBtn  = {300, 330, 200, 60};
 
-    draw_button(renderer, startBtn, "", (SDL_Color){0, 200, 0, 255});
-    draw_button(renderer, opponentBtn, "", (SDL_Color){0, 0, 200, 255});
-    draw_button(renderer, quitBtn, "", (SDL_Color){200, 0, 0, 255});
+    GR0_draw_button(renderer, startBtn, "", (SDL_Color){0, 200, 0, 255});
+    GR0_draw_button(renderer, opponentBtn, "", (SDL_Color){0, 0, 200, 255});
+    GR0_draw_button(renderer, quitBtn, "", (SDL_Color){200, 0, 0, 255});
 
-    draw_text(renderer, font, "Démarrer", (SDL_Color){255,255,255,255}, startBtn.x + startBtn.w/2, startBtn.y + startBtn.h/2);
-    draw_text(renderer, font, "Adversaire", (SDL_Color){255,255,255,255}, opponentBtn.x + opponentBtn.w/2, opponentBtn.y + opponentBtn.h/2);
-    draw_text(renderer, font, "Quitter", (SDL_Color){255,255,255,255}, quitBtn.x + quitBtn.w/2, quitBtn.y + quitBtn.h/2);
+    GR0_draw_text(renderer, font, "Démarrer", (SDL_Color){255,255,255,255}, startBtn.x + startBtn.w/2, startBtn.y + startBtn.h/2);
+    GR0_draw_text(renderer, font, "Adversaire", (SDL_Color){255,255,255,255}, opponentBtn.x + opponentBtn.w/2, opponentBtn.y + opponentBtn.h/2);
+    GR0_draw_text(renderer, font, "Quitter", (SDL_Color){255,255,255,255}, quitBtn.x + quitBtn.w/2, quitBtn.y + quitBtn.h/2);
     
-    draw_text(renderer, font, "Taille de la grille :", (SDL_Color){255, 255, 255, 255}, WINDOW_WIDTH / 2, SLIDER_Y - 30);
-    draw_slider(renderer, grid_size);
+    GR0_draw_text(renderer, font, "Taille de la grille :", (SDL_Color){255, 255, 255, 255}, WINDOW_WIDTH / 2, SLIDER_Y - 30);
+    GR0_draw_slider(renderer, grid_size);
 
     char buf[20];
     snprintf(buf, sizeof(buf), "%d x %d", grid_size, grid_size);
-    draw_text(renderer, font, buf, (SDL_Color){255, 255, 255, 255}, WINDOW_WIDTH / 2, SLIDER_Y + 30);
+    GR0_draw_text(renderer, font, buf, (SDL_Color){255, 255, 255, 255}, WINDOW_WIDTH / 2, SLIDER_Y + 30);
 }
 
-void draw_hovered_cell(SDL_Renderer* renderer, int mouseX, int mouseY, SDL_Color colors[COLOR_COUNT],GameState* etat) {
+void GR0_draw_hovered_cell(SDL_Renderer* renderer, int mouseX, int mouseY, SDL_Color colors[COLOR_COUNT],GameState* etat) {
     int gy = (mouseX - GRID_OFFSET_X) / CELL_SIZE;
     int gx = (mouseY - GRID_OFFSET_Y) / CELL_SIZE;
 
     if (gx >= 0 && gx < etat->size && gy >= 0 && gy < etat->size) {
         SDL_Color c = colors[get_map_value(etat, gx, gy)];
         Queue hover_network;
-        initQueue(&hover_network);
+        GR0_initQueue(&hover_network);
 
         GR0_get_network(etat, (int[2]){gx, gy}, &hover_network, NULL);
         int length = hover_network.length;
 
         int positions[length][2];
         for (int i = 0; i < length; i++) {
-            dequeue(&hover_network, positions[i]);
+            GR0_dequeue(&hover_network, positions[i]);
         }
 
         #pragma omp parallel for
@@ -260,14 +260,14 @@ void draw_hovered_cell(SDL_Renderer* renderer, int mouseX, int mouseY, SDL_Color
             }
         }
 
-        freeQueue(&hover_network);
+        GR0_freeQueue(&hover_network);
 
         // Afficher le numéro du joueur si la case appartient à un joueur
         int player = get_map_value(etat, gx, gy);
         if (player == PLAYER1_COLOR || player == PLAYER2_COLOR) {
             char playerText[2];
             snprintf(playerText, sizeof(playerText), "%d", player);
-            draw_text(renderer, TTF_OpenFont("arial.ttf", 16), playerText,
+            GR0_draw_text(renderer, TTF_OpenFont("arial.ttf", 16), playerText,
                       (SDL_Color){255, 255, 255, 255},
                       GRID_OFFSET_X + gy * CELL_SIZE + CELL_SIZE / 2,
                       GRID_OFFSET_Y + gx * CELL_SIZE + CELL_SIZE / 2);
@@ -275,15 +275,15 @@ void draw_hovered_cell(SDL_Renderer* renderer, int mouseX, int mouseY, SDL_Color
     }
 }
 
-void draw_turn_info(SDL_Renderer* renderer, TTF_Font* font, int player) {
+void GR0_draw_turn_info(SDL_Renderer* renderer, TTF_Font* font, int player) {
     char buffer[50];
     snprintf(buffer, sizeof(buffer), "Tour du joueur %d", player);
 
-    draw_text(renderer, font, buffer, (SDL_Color){255, 255, 255, 255},
+    GR0_draw_text(renderer, font, buffer, (SDL_Color){255, 255, 255, 255},
               WINDOW_WIDTH / 2, GRID_OFFSET_Y - 20);
 }
 
-void draw_grid(SDL_Renderer* renderer, TTF_Font* font, GameState* etat, SDL_Color colors[COLOR_COUNT]) {
+void GR0_draw_grid(SDL_Renderer* renderer, TTF_Font* font, GameState* etat, SDL_Color colors[COLOR_COUNT]) {
     if (etat->map == NULL) {
         SDL_Log("Erreur : la grille n'est pas initialisée.");
         return;
@@ -304,16 +304,16 @@ void draw_grid(SDL_Renderer* renderer, TTF_Font* font, GameState* etat, SDL_Colo
 
             // Afficher "1" ou "2" si c’est une cellule de joueur
             if (get_map_value(etat,y,x) == PLAYER1_COLOR) {
-                draw_text(renderer, font, "1", (SDL_Color){0, 0, 0, 255},
+                GR0_draw_text(renderer, font, "1", (SDL_Color){0, 0, 0, 255},
                     cell.x + cell.w / 2, cell.y + cell.h / 2);
             } else if (get_map_value(etat,y,x) == PLAYER2_COLOR) {
-                draw_text(renderer, font, "2", (SDL_Color){0, 0, 0, 255},
+                GR0_draw_text(renderer, font, "2", (SDL_Color){0, 0, 0, 255},
                     cell.x + cell.w / 2, cell.y + cell.h / 2);
             }
         }
     }
 }
-void draw_game_controls(SDL_Renderer* renderer, TTF_Font* font,int* cursor_active, int* winner) {
+void GR0_draw_game_controls(SDL_Renderer* renderer, TTF_Font* font,int* cursor_active, int* winner) {
     // Décalage des boutons vers la droite
     int button_offset_x = GRID_OFFSET_X - 180; // Décalage pour éviter la collision avec la grille
 
@@ -324,32 +324,32 @@ void draw_game_controls(SDL_Renderer* renderer, TTF_Font* font,int* cursor_activ
     SDL_Color button_color = *cursor_active ? (SDL_Color){0, 200, 0, 255} : (SDL_Color){200, 0, 0, 255};
 
     // Bouton pour activer/désactiver le curseur
-    draw_button(renderer, cursorToggleBtn, "", button_color);
+    GR0_draw_button(renderer, cursorToggleBtn, "", button_color);
 
     // Dessiner le texte sur deux lignes
-    draw_text(renderer, font, *cursor_active ? "Désactiver" : "Activer",
+    GR0_draw_text(renderer, font, *cursor_active ? "Désactiver" : "Activer",
               (SDL_Color){0, 0, 0, 255}, cursorToggleBtn.x + cursorToggleBtn.w / 2, cursorToggleBtn.y + 10);
-    draw_text(renderer, font, "Evaluation",
+    GR0_draw_text(renderer, font, "Evaluation",
               (SDL_Color){0, 0, 0, 255}, cursorToggleBtn.x + cursorToggleBtn.w / 2, cursorToggleBtn.y + 30);
 
     // Bouton pour revenir au menu
-    draw_button(renderer, backToMenuBtn, "", (SDL_Color){200, 200, 0, 255});
-    draw_text(renderer, font, "Retour Menu",
+    GR0_draw_button(renderer, backToMenuBtn, "", (SDL_Color){200, 200, 0, 255});
+    GR0_draw_text(renderer, font, "Retour Menu",
               (SDL_Color){0, 0, 0, 255}, backToMenuBtn.x + backToMenuBtn.w / 2, backToMenuBtn.y + backToMenuBtn.h / 2);
 
     // Afficher le bouton de victoire si un joueur a gagné
     if (*winner != 0) {
         SDL_Rect replayBtn = {WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT / 2 - 30, 400, 60};
-        draw_button(renderer, replayBtn, "", (SDL_Color){0, 200, 0, 255});
+        GR0_draw_button(renderer, replayBtn, "", (SDL_Color){0, 200, 0, 255});
         char buffer[50];
         if(*winner !=3){snprintf(buffer, sizeof(buffer), "Le joueur %d a gagné ! Rejouer ?", *winner);
         }else{snprintf(buffer, sizeof(buffer), "Partie nulle ! Rejouer ?");}
-        draw_text(renderer, font, buffer, (SDL_Color){255, 255, 255, 255}, replayBtn.x + replayBtn.w / 2, replayBtn.y + replayBtn.h / 2);
+        GR0_draw_text(renderer, font, buffer, (SDL_Color){255, 255, 255, 255}, replayBtn.x + replayBtn.w / 2, replayBtn.y + replayBtn.h / 2);
     }
 }
 
 
-int visual_main() {
+int GR0_visual_main() {
     int current_player = 1;
     int winner = 0;
     int cursor_active = 0;
@@ -388,7 +388,7 @@ int visual_main() {
     SDL_Event event;
     int running = 1;
     Queue moves[7];
-    initQueues(moves);
+    GR0_initQueues(moves);
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT)
@@ -418,11 +418,11 @@ int visual_main() {
                     SDL_Rect opponentBtn = {300, 240, 200, 60};
                     SDL_Rect quitBtn = {300, 330, 200, 60};
                 
-                    if (in_rect(x, y, startBtn)) {
+                    if (GR0_in_rect(x, y, startBtn)) {
                         state = GAME;
-                    } else if (in_rect(x, y, opponentBtn)) {
+                    } else if (GR0_in_rect(x, y, opponentBtn)) {
                         state = SELECT_OPPONENT;
-                    } else if (in_rect(x, y, quitBtn)) {
+                    } else if (GR0_in_rect(x, y, quitBtn)) {
                         running = 0;
                     }
                 
@@ -434,12 +434,12 @@ int visual_main() {
                             200, // Largeur
                             80   // Hauteur
                         };
-                        if (in_rect(x, y, btn)) {
+                        if (GR0_in_rect(x, y, btn)) {
                             printf("Agent : %s\n", agent_names[i]);
                             agent = i;
                             state = MENU;
                         }
-                        draw_button(renderer, btn, "", (SDL_Color){0, 200, 200, 255});
+                        GR0_draw_button(renderer, btn, "", (SDL_Color){0, 200, 200, 255});
 
                         // Afficher le nom de l'agent sur trois lignes
                         char line1[20] = {0}, line2[20] = {0}, line3[20] = {0};
@@ -451,24 +451,24 @@ int visual_main() {
                             snprintf(line3, sizeof(line3), "%.10s", agent_names[i] + 20); // Troisième ligne (reste du nom)
                         }
 
-                        draw_text(renderer, font, line1, (SDL_Color){255, 255, 255, 255},
+                        GR0_draw_text(renderer, font, line1, (SDL_Color){255, 255, 255, 255},
                                   btn.x + btn.w / 2, btn.y + btn.h / 4); // Ligne 1
                         if (strlen(line2) > 0) { // Afficher la deuxième ligne uniquement si elle n'est pas vide
-                            draw_text(renderer, font, line2, (SDL_Color){255, 255, 255, 255},
+                            GR0_draw_text(renderer, font, line2, (SDL_Color){255, 255, 255, 255},
                                       btn.x + btn.w / 2, btn.y + btn.h / 2); // Ligne 2
                         }
                         if (strlen(line3) > 0) { // Afficher la troisième ligne uniquement si elle n'est pas vide
-                            draw_text(renderer, font, line3, (SDL_Color){255, 255, 255, 255},
+                            GR0_draw_text(renderer, font, line3, (SDL_Color){255, 255, 255, 255},
                                       btn.x + btn.w / 2, btn.y + 3 * btn.h / 4); // Ligne 3
                         }
                     }
                 } else if (state == GAME) {
-                    handle_grid_click(x, y, moves, &current_player, &etat, agent, &winner, &cursor_position, cursor_active,FUNC_ARRAY);
+                    GR0_handle_grid_click(x, y, moves, &current_player, &etat, agent, &winner, &cursor_position, cursor_active,FUNC_ARRAY);
                 
                     // Gérer le bouton de victoire
                     if (winner != 0) {
                         SDL_Rect replayBtn = {WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT / 2 - 30, 300, 60};
-                        if (in_rect(x, y, replayBtn)) {
+                        if (GR0_in_rect(x, y, replayBtn)) {
 
                             GR0_initialize(&etat, grid_size);
                             current_player = 1;
@@ -479,14 +479,14 @@ int visual_main() {
                 
                     SDL_Rect cursorToggleBtn = {50, GRID_OFFSET_Y, 150, 50};
                     SDL_Rect backToMenuBtn = {50, GRID_OFFSET_Y + 60, 150, 50};
-                    if (in_rect(x, y, backToMenuBtn)) {
+                    if (GR0_in_rect(x, y, backToMenuBtn)) {
                         state = MENU; 
                         printf("Retour au menu principal.\n");
                     }
-                    if (in_rect(x, y, cursorToggleBtn)) {
+                    if (GR0_in_rect(x, y, cursorToggleBtn)) {
                         cursor_active = !cursor_active;
                         if(cursor_active) {
-                            update_cursor(&etat,current_player, &cursor_position, cursor_active);
+                            GR0_update_cursor(&etat,current_player, &cursor_position, cursor_active);
                         }
                         printf("Curseur %s\n", cursor_active ? "activé" : "désactivé");
                     }
@@ -500,17 +500,17 @@ int visual_main() {
         SDL_RenderClear(renderer);
 
         if (state == MENU) {
-            draw_menu(renderer, font, grid_size);
+            GR0_draw_menu(renderer, font, grid_size);
         } else if (state == GAME) {
 
-            draw_turn_info(renderer, font, current_player);
-            draw_grid(renderer, font, &etat, colors);
+            GR0_draw_turn_info(renderer, font, current_player);
+            GR0_draw_grid(renderer, font, &etat, colors);
             int mx, my;
             SDL_GetMouseState(&mx, &my);
-            draw_hovered_cell(renderer, mx, my, colors, &etat);
+            GR0_draw_hovered_cell(renderer, mx, my, colors, &etat);
             
-            draw_cursor(renderer, cursor_position, cursor_active, colors);
-            draw_game_controls(renderer, font, &cursor_active, &winner);
+            GR0_draw_cursor(renderer, cursor_position, cursor_active, colors);
+            GR0_draw_game_controls(renderer, font, &cursor_active, &winner);
 
         } else if (state == SELECT_OPPONENT) {
             for (int i = 0; i < 8; ++i) {
@@ -520,7 +520,7 @@ int visual_main() {
                     200, // Largeur
                     80   // Hauteur
                 };
-                draw_button(renderer, btn, "", (SDL_Color){0, 200, 200, 255});
+                GR0_draw_button(renderer, btn, "", (SDL_Color){0, 200, 200, 255});
 
                 // Afficher le nom de l'agent sur trois lignes
                 char line1[20] = {0}, line2[20] = {0}, line3[20] = {0};
@@ -532,14 +532,14 @@ int visual_main() {
                     snprintf(line3, sizeof(line3), "%.10s", agent_names[i] + 20); // Troisième ligne (reste du nom)
                 }
 
-                draw_text(renderer, font, line1, (SDL_Color){255, 255, 255, 255},
+                GR0_draw_text(renderer, font, line1, (SDL_Color){255, 255, 255, 255},
                           btn.x + btn.w / 2, btn.y + btn.h / 4); // Ligne 1
                 if (strlen(line2) > 0) { // Afficher la deuxième ligne uniquement si elle n'est pas vide
-                    draw_text(renderer, font, line2, (SDL_Color){255, 255, 255, 255},
+                    GR0_draw_text(renderer, font, line2, (SDL_Color){255, 255, 255, 255},
                               btn.x + btn.w / 2, btn.y + btn.h / 2); // Ligne 2
                 }
                 if (strlen(line3) > 0) { // Afficher la troisième ligne uniquement si elle n'est pas vide
-                    draw_text(renderer, font, line3, (SDL_Color){255, 255, 255, 255},
+                    GR0_draw_text(renderer, font, line3, (SDL_Color){255, 255, 255, 255},
                               btn.x + btn.w / 2, btn.y + 3 * btn.h / 4); // Ligne 3
                 }
             }
@@ -555,7 +555,7 @@ int visual_main() {
     font = NULL;
     SDL_Quit();
     TTF_Quit();
-    freeQueues(moves);
+    GR0_freeQueues(moves);
     GR0_free_state(&etat);
     return 0;
 }

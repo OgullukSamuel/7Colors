@@ -15,26 +15,26 @@ typedef struct {
     int capacity;              // Maximum capacity of the queue
 } Queue;
 
-int injection(int* values);
-void enqueue(Queue* q, int value[2]);
-void dequeue(Queue* q, int value[2]);
-void displayQueue(Queue* q);
-void initQueue(Queue* q);
+int GR0_injection(int* values);
+void GR0_enqueue(Queue* q, int value[2]);
+void GR0_dequeue(Queue* q, int value[2]);
+void GR0_displayQueue(Queue* q);
+void GR0_initQueue(Queue* q);
 
-void initQueues(Queue* q);
-void resetQueue(Queue* q);
+void GR0_initQueues(Queue* q);
+void GR0_resetQueue(Queue* q);
 
-void resetQueues(Queue* q) ;
-void freeQueues(Queue* q);
-void displayQueue(Queue* q);
+void GR0_resetQueues(Queue* q) ;
+void GR0_freeQueues(Queue* q);
+void GR0_displayQueue(Queue* q);
 void GR0_resizeQueue(Queue* q);
-void freeQueue(Queue* q); 
-int isinQueue(Queue* q, int value[2]);
-void insert_sorted(Queue* q, int value[2]);
+void GR0_freeQueue(Queue* q); 
+int GR0_isinQueue(Queue* q, int value[2]);
+void GR0_insert_sorted(Queue* q, int value[2]);
 
-void concatenateQueue(Queue* queue1, Queue* queue2);
-void freeQueue(Queue* q);
-Queue* copyQueue(Queue* original);
-void testQueue() ;
+void GR0_concatenateQueue(Queue* queue1, Queue* queue2);
+void GR0_freeQueue(Queue* q);
+Queue* GR0_copyQueue(Queue* original);
+void GR0_testQueue() ;
 
 #endif

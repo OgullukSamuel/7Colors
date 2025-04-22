@@ -15,46 +15,46 @@ void GR0_get_adjacent_cases(GameState* state, int x, int y, Queue* unexplored, Q
 
         if (x_ >= 0 && x_ < state->size && y_ >= 0 && y_ < state->size) {
             int pos[2]= {x_, y_};
-            if (!isinQueue(explored, pos) && !isinQueue(unexplored, pos)) {
+            if (!GR0_isinQueue(explored, pos) && !GR0_isinQueue(unexplored, pos)) {
                 Color c = get_map_value(state, x_, y_);
                 if (c == color) {
-                    enqueue(unexplored, pos);
+                    GR0_enqueue(unexplored, pos);
                     
                 } else if (!SameColor && c <= 9 && c >= 3) {
-                    enqueue(movements, pos);
+                    GR0_enqueue(movements, pos);
                 }
             }
         }
     }
 
     int posi[2] = {x, y};
-    enqueue(explored, posi);
+    GR0_enqueue(explored, posi);
 }
 
 void GR0_get_network(GameState* state, int* pos, Queue* explored, Queue* coup) {
     Queue unexplored;
-    initQueue(&unexplored);
+    GR0_initQueue(&unexplored);
 
-    enqueue(&unexplored, pos);
+    GR0_enqueue(&unexplored, pos);
 
     
     while (unexplored.length != 0) {
         int next[2];
-        dequeue(&unexplored, next);
+        GR0_dequeue(&unexplored, next);
         if(next[0]>state->size || next[1]>state->size || next[0]<0 || next[1]<0){
             printf("Enqueueing unexplored GN(%d, %d)\n", next[0], next[1]);
-            displayQueue(&unexplored);
+            GR0_displayQueue(&unexplored);
             return;
         }
         GR0_get_adjacent_cases(state, next[0], next[1], &unexplored, explored, 1, coup);
     }
-    freeQueue(&unexplored);
+    GR0_freeQueue(&unexplored);
 }
 
 void GR0_update_map(GameState* state, Queue* network, int player) {
     int next[2];
     while (network->length != 0) {
-        dequeue(network, next);
+        GR0_dequeue(network, next);
         if (get_map_value(state, next[0], next[1]) != player) {
             set_map_value(state, next[0], next[1], player);
         }
@@ -63,29 +63,29 @@ void GR0_update_map(GameState* state, Queue* network, int player) {
 
 void GR0_step(GameState* state ,Queue* coup ,int player){
 	Queue explored;
-	initQueue(&explored);
+	GR0_initQueue(&explored);
 	int current[2];
 	while(coup->length!=0){
-		dequeue(coup, current);
+		GR0_dequeue(coup, current);
 		GR0_get_network(state, current,  &explored,coup);
 		
 	}
 	
 	GR0_update_map(state, &explored, player);
-    freeQueue(&explored); 
+    GR0_freeQueue(&explored); 
 }
 
 
 int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player){
 	Queue explored;
-	initQueue(&explored);
+	GR0_initQueue(&explored);
 	int current[2];
 	while(coup->length!=0){
-		dequeue(coup, current);
+		GR0_dequeue(coup, current);
 		GR0_get_network(state, current,  &explored,coup);
 	}
     int explolength = explored.length;
-    freeQueue(&explored);
+    GR0_freeQueue(&explored);
 	return(explolength);
 }
 
@@ -93,14 +93,14 @@ int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player){
 GameState GR0_virtual_depth_step(GameState* state ,Queue* coup ,int player){
 	GameState new_state=GR0_copy_game_state(state);
 	Queue explored;
-	initQueue(&explored);
+	GR0_initQueue(&explored);
 	int current[2];
 	while(coup->length!=0){
-		dequeue(coup, current);
+		GR0_dequeue(coup, current);
 		GR0_get_network(&new_state, current,  &explored,coup);
 	}
 	GR0_update_map(&new_state, &explored, player);
-    freeQueue(&explored);
+    GR0_freeQueue(&explored);
 	return(new_state);
 }
 
@@ -122,29 +122,29 @@ GameState GR0_copy_game_state(GameState* original) {
 uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]){
 	int pos[2]= { player == 1 ? 0 : state->size - 1,player == 1 ? state->size - 1 : 0 };
 	Queue unexplored;
-    initQueue(&unexplored);
+    GR0_initQueue(&unexplored);
 	Queue explored;
-    initQueue(&explored);
+    GR0_initQueue(&explored);
     Queue movements;
-    initQueue(&movements);
-	enqueue(&unexplored, pos);
+    GR0_initQueue(&movements);
+	GR0_enqueue(&unexplored, pos);
 	int next[2];
 	while (unexplored.length != 0) {
-		dequeue(&unexplored, next);
+		GR0_dequeue(&unexplored, next);
 		GR0_get_adjacent_cases(state, next[0], next[1], &unexplored, &explored, 0, &movements);
 	}
 
 	while (movements.length != 0) {
-		dequeue(&movements, next);
+		GR0_dequeue(&movements, next);
 		int color_index = get_map_value(state, next[0], next[1]) - 3;
         if (color_index >= 0 && color_index < 7) {
-            enqueue(&moves[color_index], next);
-	}
-}
+            GR0_enqueue(&moves[color_index], next);
+	    }
+    }
 
-    freeQueue(&unexplored);
-    freeQueue(&explored);
-    freeQueue(&movements);
+    GR0_freeQueue(&unexplored);
+    GR0_freeQueue(&explored);
+    GR0_freeQueue(&movements);
 	return GR0_condenser(moves);
 }
 
@@ -157,16 +157,16 @@ int GR0_partie_finie(GameState* state) {
     int length_j1, length_j2;
 
     Queue explored1;
-    initQueue(&explored1);
+    GR0_initQueue(&explored1);
     GR0_get_network(state, pos_j1, &explored1, NULL);
     length_j1 = explored1.length;
-    freeQueue(&explored1);
+    GR0_freeQueue(&explored1);
     Queue explored2;
-    initQueue(&explored2);
+    GR0_initQueue(&explored2);
     GR0_get_network(state, pos_j2, &explored2, NULL);
 
     length_j2 = explored2.length;
-    freeQueue(&explored2);
+    GR0_freeQueue(&explored2);
     if (length_j1 > (size * size) / 2 && length_j1 > length_j2) {
         return 1; // Joueur 1 gagne
     }

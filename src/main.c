@@ -14,10 +14,10 @@ int main(int argc, char** argv){
         printf("Entrez votre choix (1 ou 2) : ");
         scanf("%d", &choix);
         if (choix == 1) {
-            evaluation_main();
+            GR0_evaluation_main();
             break;
         } else if (choix == 2) {
-            visual_main();
+            GR0_visual_main();
             break;
         } else {
             printf("Choix invalide. Veuillez choisir 1 ou 2.\n");

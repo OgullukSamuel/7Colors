@@ -10,17 +10,17 @@ int injection(int* values) {
     return (values[0] << 16) | (values[1] & 0xFFFF);
 }*/
 
-void concatenateQueue(Queue* queue1, Queue* queue2){
+void GR0_concatenateQueue(Queue* queue1, Queue* queue2){
     //on copie la queue 2 dans la queue 1
-    Queue* queue3=copyQueue(queue2);
+    Queue* queue3=GR0_copyQueue(queue2);
     for(int i=0; i<queue3->length; i++){
         int value[2];
-        dequeue(queue3, value);
-        enqueue(queue1, value);
+        GR0_dequeue(queue3, value);
+        GR0_enqueue(queue1, value);
     }
 }
 
-Queue* copyQueue(Queue* original) {
+Queue* GR0_copyQueue(Queue* original) {
     // Allocate memory for the new queue
     Queue* copy = malloc(sizeof(Queue));
     if (!copy) {
@@ -29,7 +29,7 @@ Queue* copyQueue(Queue* original) {
     }
 
     // Initialize the new queue
-    initQueue(copy);
+    GR0_initQueue(copy);
 
     // Resize the new queue to match the original queue's capacity
     copy->capacity = original->capacity;
@@ -42,7 +42,7 @@ Queue* copyQueue(Queue* original) {
     copy->sorted_values = malloc(copy->capacity * sizeof(int));
     if (!copy->items || !copy->sorted_values) {
         printf("[ERROR] Memory allocation failed in copyQueue\n");
-        freeQueue(copy);
+        GR0_freeQueue(copy);
         free(copy);
         exit(1);
     }
@@ -95,7 +95,7 @@ void GR0_resizeQueue(Queue* q) {
     q->capacity = 2 * old_capacity;
 }
 
-void initQueue(Queue *q) {
+void GR0_initQueue(Queue *q) {
     q->capacity = QUEUE_INIT_CAPACITY;
     q->length = 0;
     q->front = 0;
@@ -114,7 +114,7 @@ void initQueue(Queue *q) {
     }
 }
 
-void freeQueue(Queue* q) {
+void GR0_freeQueue(Queue* q) {
     if (q->items) {
         free(q->items);
         q->items = NULL; // Prevent double free
@@ -125,7 +125,7 @@ void freeQueue(Queue* q) {
     }
 }
 
-void insert_sorted(Queue* q, int value[2]) {
+void GR0_insert_sorted(Queue* q, int value[2]) {
     int injected_value = injection(value);
     int left = 0; 
     int right = q->length;
@@ -148,7 +148,7 @@ void insert_sorted(Queue* q, int value[2]) {
     q->sorted_values[left] = injected_value;
 }
 
-void enqueue(Queue* q, int value[2]) {
+void GR0_enqueue(Queue* q, int value[2]) {
     if (q->length == q->capacity) {
         GR0_resizeQueue(q);
     }
@@ -157,11 +157,11 @@ void enqueue(Queue* q, int value[2]) {
     q->items[2*q->rear] = value[0];
     q->items[2*q->rear + 1] = value[1];
 
-    insert_sorted(q, value);
+    GR0_insert_sorted(q, value);
     q->length++;
 }
 
-void dequeue(Queue* q, int value[2]) {
+void GR0_dequeue(Queue* q, int value[2]) {
     if (q->length == 0) {
         printf("Queue vide !\n");
         return;
@@ -191,7 +191,7 @@ void dequeue(Queue* q, int value[2]) {
     }
 }
 
-int isinQueue(Queue* q, int value[2]) {
+int GR0_isinQueue(Queue* q, int value[2]) {
     if (q->length == 0) return 0;
     int injected_value = injection(value);
     int left = 0;
@@ -210,18 +210,18 @@ int isinQueue(Queue* q, int value[2]) {
     return 0;
 }
 
-void freeQueues(Queue* q){
+void GR0_freeQueues(Queue* q){
     for (int i = 0; i < 7; i++) {
-        freeQueue(&q[i]);
+        GR0_freeQueue(&q[i]);
     }
 }
 
-void initQueues(Queue* q){
+void GR0_initQueues(Queue* q){
     for (int i = 0; i < 7; i++) {
-        initQueue(&q[i]);
+        GR0_initQueue(&q[i]);
     }
 }
-void resetQueue(Queue* q) {
+void GR0_resetQueue(Queue* q) {
     q->length = 0;
     q->front = 0;
     q->rear = -1;
@@ -246,13 +246,13 @@ void resetQueue(Queue* q) {
     }
 }
 
-void resetQueues(Queue* q) {
+void GR0_resetQueues(Queue* q) {
     for (int i = 0; i < 7; i++) {
-        resetQueue(&q[i]);
+        GR0_resetQueue(&q[i]);
     }
 }
 
-void displayQueue(Queue* q) {
+void GR0_displayQueue(Queue* q) {
     if (q->length == 0) {
         printf("Queue vide !\n");
         return;
@@ -266,7 +266,7 @@ void displayQueue(Queue* q) {
 }
 
 
-void testQueue() {
+void GR0_testQueue() {
     Queue q;
     int value[2];
 
@@ -274,17 +274,17 @@ void testQueue() {
 
     // Test 1: Initialize the queue
     printf("Test 1: Initializing queue...\n");
-    initQueue(&q);
-    displayQueue(&q);
+    GR0_initQueue(&q);
+    GR0_displayQueue(&q);
 
     // Test 2: Enqueue elements
     printf("Test 2: Enqueueing elements...\n");
     for (int i = 0; i < 10; i++) {
         value[0] = i;
         value[1] = i * 2;
-        enqueue(&q, value);
+        GR0_enqueue(&q, value);
     }
-    displayQueue(&q);
+    GR0_displayQueue(&q);
 
     // Test 3: Dequeue elements
     printf("Test 3: Dequeueing elements...\n");
@@ -292,10 +292,10 @@ void testQueue() {
     printf("Queue capacity: %d\n", q.capacity);
 
     for (int i = 0; i < 5; i++) {
-        dequeue(&q, value);
+        GR0_dequeue(&q, value);
         printf("Dequeued: [%d, %d]\n", value[0], value[1]);
     }
-    displayQueue(&q);
+    GR0_displayQueue(&q);
     printf("Queue length: %d\n", q.length);
     printf("Queue capacity: %d\n", q.capacity);
 
@@ -304,63 +304,63 @@ void testQueue() {
     printf("Test 4: Checking if elements are in the queue...\n");
     value[0] = 5;
     value[1] = 10;
-    printf("Is [%d, %d] in queue? %s\n", value[0], value[1], isinQueue(&q, value) ? "Yes" : "No");
+    printf("Is [%d, %d] in queue? %s\n", value[0], value[1], GR0_isinQueue(&q, value) ? "Yes" : "No");
     value[0] = 100;
     value[1] = 200;
-    printf("Is [%d, %d] in queue? %s\n", value[0], value[1], isinQueue(&q, value) ? "Yes" : "No");
+    printf("Is [%d, %d] in queue? %s\n", value[0], value[1], GR0_isinQueue(&q, value) ? "Yes" : "No");
 
     printf("Test 6: Enqueueing after dequeue...\n");
     for (int i = 0; i < 6; i++) {
         value[0] = i + 10;
         value[1] = (i + 10) * 2;
-        enqueue(&q, value);
+        GR0_enqueue(&q, value);
     }
-    displayQueue(&q);
+    GR0_displayQueue(&q);
     printf("Queue length: %d\n", q.length);
     printf("Queue capacity: %d\n", q.capacity);
 
 
     // Test 5: Reset the queue
     printf("Test 5: Resetting the queue...\n");
-    resetQueue(&q);
-    displayQueue(&q);
+    GR0_resetQueue(&q);
+    GR0_displayQueue(&q);
 
     // Test 6: Enqueue after reset
     printf("Test 6: Enqueueing after reset...\n");
     for (int i = 0; i < 6; i++) {
         value[0] = i + 10;
         value[1] = (i + 10) * 2;
-        enqueue(&q, value);
+        GR0_enqueue(&q, value);
     }
-    displayQueue(&q);
+    GR0_displayQueue(&q);
     printf("Queue length: %d\n", q.length);
     printf("Queue capacity: %d\n", q.capacity);
 
     // Test 7: Free the queue
     printf("Test 7: Freeing the queue...\n");
-    freeQueue(&q);
+    GR0_freeQueue(&q);
     printf("Queue freed successfully.\n");
 
     // Test 8: Initialize multiple queues
     printf("Test 8: Initializing multiple queues...\n");
     Queue queues[7];
-    initQueues(queues);
+    GR0_initQueues(queues);
     for (int i = 0; i < 7; i++) {
         printf("Queue %d:\n", i);
-        displayQueue(&queues[i]);
+        GR0_displayQueue(&queues[i]);
     }
 
     // Test 9: Reset multiple queues
     printf("Test 9: Resetting multiple queues...\n");
-    resetQueues(queues);
+    GR0_resetQueues(queues);
     for (int i = 0; i < 7; i++) {
         printf("Queue %d after reset:\n", i);
-        displayQueue(&queues[i]);
+        GR0_displayQueue(&queues[i]);
     }
 
     // Test 10: Free multiple queues
     printf("Test 10: Freeing multiple queues...\n");
-    freeQueues(queues);
+    GR0_freeQueues(queues);
     printf("All queues freed successfully.\n");
 
     printf("=== All Tests Completed ===\n");

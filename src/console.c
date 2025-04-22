@@ -4,7 +4,7 @@ int Size;
 
 int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)(GameState*, Color), int affichage) {
     Queue moves[7];
-    initQueues(moves);
+    GR0_initQueues(moves);
     GameState etat={.map = NULL, .size = 0};
     GR0_initialize(&etat,Size);
 	//GR0_plot_heuristique_mask(&etat);
@@ -13,7 +13,7 @@ int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)
 
     while (fin == 0) {
         if (affichage) { GR0_plot(&etat); }
-        resetQueues(moves);
+        GR0_resetQueues(moves);
         // Joueur 1
         uint8_t coup_dispo1=GR0_get_move_available(&etat, 1, moves);
         if (coup_dispo1 == 0) {
@@ -30,7 +30,7 @@ int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)
         if (affichage) { GR0_plot(&etat); }
         fin = GR0_partie_finie(&etat);
         if (fin != 0) { break; }
-        resetQueues(moves);
+        GR0_resetQueues(moves);
         uint8_t coup_dispo2=GR0_get_move_available(&etat, 2, moves);
         if (coup_dispo2 == 0) {
             fin = 1; // Joueur 1 gagne si Joueur 2 ne peut pas jouer
@@ -45,7 +45,7 @@ int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)
 
         fin = GR0_partie_finie(&etat);
     }
-    freeQueues(moves);
+    GR0_freeQueues(moves);
     if (affichage) { GR0_plot(&etat); }
 
     fin = (fin ==3 ) ? 1.5 : fin;
@@ -132,7 +132,7 @@ void GR0_elo_ranking(int choix) {
     }
 }
 
-int evaluation_main(){
+int GR0_evaluation_main(){
 	IAS ia;
 	GR0_question_IA_IA(&ia);
     do{printf("Donne la taille de la carte que tu souhaites (entre 3 et 100): ");

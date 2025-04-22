@@ -16,7 +16,7 @@ int GR0_random_bit_index(uint8_t n) {
     return indices[rand() % count];
 }
 
-float clip(float value, float min, float max) {
+float GR0_clip(float value, float min, float max) {
     if (value < min) return min;
     if (value > max) return max;
     return value;
@@ -36,7 +36,7 @@ inline void GR0_decondenser(uint8_t condenser,int bits[7]){
 	}
 }	
 
-void time_function(const char* function_name, void (*function_to_time)(void)) {
+void GR0_time_function(const char* function_name, void (*function_to_time)(void)) {
     clock_t start_time = clock();
     function_to_time();
     clock_t end_time = clock();
@@ -49,10 +49,10 @@ int GR0_get_random_scalar(int min, int max){
     return min + rand() % (max - min + 1);
 }
 
-inline float exp_approx(float x){
+inline float GR0_exp_approx(float x){
 	return(1/(1-x*(1-x/2)));
 }
 
-inline float tanh_approx(float x){
+inline float GR0_tanh_approx(float x){
 	return(x*(27+x*x)/(27+9*x*x));
 }

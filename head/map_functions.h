@@ -23,8 +23,4 @@ void GR0_step(GameState* state ,Queue* coup ,int player);
 int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player);
 
 
-void precompute_networks(GameState* etat);
-
-void free_precomputed_networks(GameState* etat);
-
 #endif
