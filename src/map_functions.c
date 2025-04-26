@@ -134,6 +134,7 @@ uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]){
 		GR0_get_adjacent_cases(state, next[0], next[1], &unexplored, &explored, 0, &movements);
 	}
 
+
 	while (movements.length != 0) {
 		GR0_dequeue(&movements, next);
 		int color_index = get_map_value(state, next[0], next[1]) - 3;
@@ -145,10 +146,27 @@ uint8_t GR0_get_move_available(GameState* state,Color player,Queue moves[7]){
     GR0_freeQueue(&unexplored);
     GR0_freeQueue(&explored);
     GR0_freeQueue(&movements);
-	return GR0_condenser(moves);
+	
+    
+    
+    
+    return GR0_condenser(moves);
 }
 
-
+void GR0_get_total_moves(GameState* state, Color player, Queue* moves) {
+    Queue moves2[7];
+    GR0_initQueues(moves2);
+    GR0_get_move_available(state, player, moves2);
+    int pos[2];
+    for(int i = 0; i < 7; i++){
+        while(moves2[i].length != 0){
+            GR0_dequeue(&moves2[i], pos);
+            GR0_get_network(state, pos, &moves[i], NULL);
+        }
+    }
+    GR0_freeQueues(moves2);
+    return;
+}
 
 int GR0_partie_finie(GameState* state) {
     int size = state->size;

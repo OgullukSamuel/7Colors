@@ -22,5 +22,6 @@ void GR0_step(GameState* state ,Queue* coup ,int player);
 
 int GR0_virtual_glouton_step(GameState* state ,Queue* coup ,int player);
 
+void GR0_get_total_moves(GameState* state, Color player, Queue* moves);
 
 #endif

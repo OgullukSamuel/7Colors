@@ -229,7 +229,7 @@ void GR0_resetQueue(Queue* q) {
 
     q->items = realloc(q->items, q->capacity * sizeof(int) * 2);
     if (!q->items) {
-        printf("[ERROR] Memory reallocation failed for items in resetQueue\n");
+        printf("[ERREUR] La réalocation mémoire objet a échouée dans resetQueue\n");
         exit(1);
     }
     for (int i = 0; i < q->capacity * 2; i++) {
@@ -238,7 +238,7 @@ void GR0_resetQueue(Queue* q) {
 
     q->sorted_values = realloc(q->sorted_values, q->capacity * sizeof(int));
     if (!q->sorted_values) {
-        printf("[ERROR] Memory reallocation failed for sorted_values in resetQueue\n");
+        printf("[ERREUR] La réalocation mémoire triée a échouée dans resetQueue\n");
         exit(1);
     }
     for (int i = 0; i < q->capacity; i++) {
@@ -265,20 +265,27 @@ void GR0_displayQueue(Queue* q) {
     printf("\n");
 }
 
+void GR0_displayQueues(Queue* q){
+    for (int i = 0; i < 7; i++) {
+        printf("Queue %d: ", i);
+        GR0_displayQueue(&q[i]);
+    }
+}
+
 
 void GR0_testQueue() {
     Queue q;
     int value[2];
 
-    printf("=== Testing Queue Implementation ===\n");
+    printf("Début du test des files\n");
 
     // Test 1: Initialize the queue
-    printf("Test 1: Initializing queue...\n");
+    printf("Test 1: initialisation\n");
     GR0_initQueue(&q);
     GR0_displayQueue(&q);
 
     // Test 2: Enqueue elements
-    printf("Test 2: Enqueueing elements...\n");
+    printf("Test 2: ajout d'élement\n");
     for (int i = 0; i < 10; i++) {
         value[0] = i;
         value[1] = i * 2;
@@ -287,13 +294,13 @@ void GR0_testQueue() {
     GR0_displayQueue(&q);
 
     // Test 3: Dequeue elements
-    printf("Test 3: Dequeueing elements...\n");
+    printf("Test 3: enlever les éléments\n");
     printf("Queue length: %d\n", q.length);
     printf("Queue capacity: %d\n", q.capacity);
 
     for (int i = 0; i < 5; i++) {
         GR0_dequeue(&q, value);
-        printf("Dequeued: [%d, %d]\n", value[0], value[1]);
+        printf("enlevé: [%d, %d]\n", value[0], value[1]);
     }
     GR0_displayQueue(&q);
     printf("Queue length: %d\n", q.length);
@@ -301,7 +308,7 @@ void GR0_testQueue() {
 
 
     // Test 4: Check if elements are in the queue
-    printf("Test 4: Checking if elements are in the queue...\n");
+    printf("Test 4: verification que les éléments sont dans la file\n");
     value[0] = 5;
     value[1] = 10;
     printf("Is [%d, %d] in queue? %s\n", value[0], value[1], GR0_isinQueue(&q, value) ? "Yes" : "No");
@@ -309,7 +316,7 @@ void GR0_testQueue() {
     value[1] = 200;
     printf("Is [%d, %d] in queue? %s\n", value[0], value[1], GR0_isinQueue(&q, value) ? "Yes" : "No");
 
-    printf("Test 6: Enqueueing after dequeue...\n");
+    printf("Test 6: ajout après avoir enlevé \n");
     for (int i = 0; i < 6; i++) {
         value[0] = i + 10;
         value[1] = (i + 10) * 2;
@@ -321,12 +328,12 @@ void GR0_testQueue() {
 
 
     // Test 5: Reset the queue
-    printf("Test 5: Resetting the queue...\n");
+    printf("Test 5: Reset des files\n");
     GR0_resetQueue(&q);
     GR0_displayQueue(&q);
 
     // Test 6: Enqueue after reset
-    printf("Test 6: Enqueueing after reset...\n");
+    printf("Test 6: ajout après reset\n");
     for (int i = 0; i < 6; i++) {
         value[0] = i + 10;
         value[1] = (i + 10) * 2;
@@ -337,12 +344,12 @@ void GR0_testQueue() {
     printf("Queue capacity: %d\n", q.capacity);
 
     // Test 7: Free the queue
-    printf("Test 7: Freeing the queue...\n");
+    printf("Test 7: libérer les queue...\n");
     GR0_freeQueue(&q);
-    printf("Queue freed successfully.\n");
+    printf("queue libérée avec succès.\n");
 
     // Test 8: Initialize multiple queues
-    printf("Test 8: Initializing multiple queues...\n");
+    printf("Test 8: initialisation de multiples queues\n");
     Queue queues[7];
     GR0_initQueues(queues);
     for (int i = 0; i < 7; i++) {
@@ -351,7 +358,7 @@ void GR0_testQueue() {
     }
 
     // Test 9: Reset multiple queues
-    printf("Test 9: Resetting multiple queues...\n");
+    printf("Test 9: reset des queues\n");
     GR0_resetQueues(queues);
     for (int i = 0; i < 7; i++) {
         printf("Queue %d after reset:\n", i);
@@ -359,9 +366,9 @@ void GR0_testQueue() {
     }
 
     // Test 10: Free multiple queues
-    printf("Test 10: Freeing multiple queues...\n");
+    printf("Test 10: liberage de multiples queues\n");
     GR0_freeQueues(queues);
     printf("All queues freed successfully.\n");
 
-    printf("=== All Tests Completed ===\n");
+    printf("=== Tous les tests ont eu du succès ===\n");
 }

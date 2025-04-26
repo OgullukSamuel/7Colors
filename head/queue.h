@@ -37,4 +37,6 @@ void GR0_freeQueue(Queue* q);
 Queue* GR0_copyQueue(Queue* original);
 void GR0_testQueue() ;
 
+void GR0_displayQueues(Queue* q);
+
 #endif

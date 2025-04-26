@@ -13,19 +13,38 @@ char* agent_names[NUM_AGENT] = {
 };
 
 
+// WIP
+/*
+si on veut changer de theme
+si on veut changer de police
+si on veut changer les joueurs et la rotation automatique
+si on veut afficher le territoire de chaque joueur
+optimiser l'affichage pour pas qu'il y ait de lag
+mettre des sons ?
+mettre des images ? 
+mettre des animations ?
+mode sombre ?
+affichage du bot si on joue contre un bot
+hints
+bouton de swap des cotés
+
+
+*/
+
+
 
 func_ptr FUNC_ARRAY[NUM_AGENT] = {&GR0_IA_Random, &GR0_Glouton,&GR0_Glouton_heuristique, &GR0_minmax3, &GR0_minmax6, &GR0_frontier_IA5, &GR0_frontier_IA5_heuristique,&GR0_hegemonique, &GR0_hegemonique_heuristique};
 
 SDL_Color colors[COLOR_COUNT + 1] = {
     {0, 0, 0, 255},         // 0 - Ne sera pas utilisé (éviter le 0)
-    {255, 165, 0, 255},     // 1 - Joueur 1 Orange
+    {200, 165, 0, 255},     // 1 - Joueur 1 Orange
     {128, 0, 128, 255},          // 1 - Joueur 2 Violet
-    {255, 0, 0, 255},       // 3 - Rouge
-    {0, 255, 0, 255},       // 4 - Vert
-    {0, 0, 255, 255},       // 5 - Bleu
-    {255, 255, 0, 255},     // 6 - Jaune
-    {255, 0, 255, 255},     // 7 - Magenta
-    {0, 255, 255, 255},     // 8 - Cyan
+    {230, 0, 0, 255},       // 3 - Rouge
+    {0, 200, 0, 255},       // 4 - Vert
+    {0, 0, 200, 255},       // 5 - Bleu
+    {200, 200, 0, 255},     // 6 - Jaune
+    {240, 0, 240, 255},     // 7 - Magenta
+    {0, 220, 220, 255},     // 8 - Cyan
     {255, 255, 255, 255}    // 9 - Blanc
 };
 
@@ -43,10 +62,9 @@ SDL_Texture* GR0_renderText(SDL_Renderer* renderer, TTF_Font* font, const char* 
     return texture;
 }
 
-
 void GR0_draw_text(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color, int x, int y) {
     SDL_Texture* texture = GR0_renderText(renderer, font, text, color);
-    if (!texture) return; // Ne rien faire si la texture est NULL
+    if (!texture) return;
 
     int texW = 0, texH = 0;
     SDL_QueryTexture(texture, NULL, NULL, &texW, &texH);
@@ -69,124 +87,181 @@ void GR0_update_cursor(GameState* etat,int current_player, int* cursor_position,
     }
 }
 
-void GR0_handle_grid_click(int mouseX, int mouseY, Queue* moves,int* current_player, GameState* etat, int agent, int* winner, int* cursor_position, int cursor_active,func_ptr FUNC_ARRAY[NUM_AGENT]) {
-
+void GR0_handle_grid_click(int mouseX, int mouseY, Queue* moves, int* current_player, GameState* etat, int agent, int* winner, int* cursor_position, int cursor_active, func_ptr FUNC_ARRAY[NUM_AGENT], int* swap_sides,int* swapchoice,int* hint) {
     int gy = (mouseX - GRID_OFFSET_X) / CELL_SIZE;
     int gx = (mouseY - GRID_OFFSET_Y) / CELL_SIZE;
+
+    // Apply 180-degree rotation if swap_sides is enabled
+    if (*swapchoice&&*swap_sides) {
+        gx = etat->size - 1 - gx;
+        gy = etat->size - 1 - gy;
+    }
+
+    printf("Mouse clicked at (%d, %d)\n", gx, gy);
+    if (gx < 0 || gx >= etat->size || gy < 0 || gy >= etat->size) {
+        return;
+    }
+
     GR0_resetQueues(moves);
-    GR0_get_move_available(etat, *current_player, moves);
+    GR0_get_total_moves(etat, *current_player, moves);
+    GR0_displayQueues(moves);
+
     int coup_dispo = -1;
-    for(int i=0;i<7;i++){
-        if(GR0_isinQueue(&moves[i],(int[2]){gx,gy})){
+    for (int i = 0; i < 7; i++) {
+        if (GR0_isinQueue(&moves[i], (int[2]){gx, gy})) {
             coup_dispo = i;
             printf("Case (%d,%d) disponible pour le joueur, couleur %d %d\n", gx, gy, *current_player, i);
             break;
         }
     }
 
-    if (coup_dispo!=-1) {
+    if (coup_dispo != -1) {
         GR0_step(etat, &moves[coup_dispo], *current_player);
-        GR0_update_cursor(etat,*current_player, cursor_position, cursor_active);
+        GR0_update_cursor(etat, *current_player, cursor_position, cursor_active);
+        *hint =0;
         int fin = GR0_partie_finie(etat);
-        
+
         if (fin != 0) {
-            if(fin!=3){
+            if (fin != 3) {
                 printf("Partie terminée ! Joueur %d a gagné.\n", fin);
-            }else{
+            } else {
                 printf("Partie nulle !\n");
             }
             *winner = fin;
         }
-        printf("agent %d\n", agent);
-        *current_player= (*current_player==1)?2 :1;
-        if(*current_player == 2 && agent!=-1){
+
+        *current_player = (*current_player == 1) ? 2 : 1;
+
+        if(*swapchoice){*swap_sides = !(*swap_sides);}
+        
+        if (*current_player == 2 && agent != -1) {
             GR0_resetQueues(moves);
             GR0_get_move_available(etat, 2, moves);
-            Color coup= FUNC_ARRAY[agent](etat, 2);
+            Color coup = FUNC_ARRAY[agent](etat, 2);
             if (coup == -1) {
-                printf("L'adversaire abandonne\n");
+                printf("L'adversaire abandonne. Joueur %d gagne.\n", 1);
+                *winner = 1;
             } else {
                 printf("Coup de l'agent %d : (%d, %d)\n", agent, gx, gy);
                 GR0_step(etat, &moves[coup], 2);
-                GR0_update_cursor(etat,*current_player, cursor_position, cursor_active);
+                GR0_update_cursor(etat, *current_player, cursor_position, cursor_active);
                 int fin = GR0_partie_finie(etat);
                 if (fin != 0) {
-                    if(fin!=3){
+                    if (fin != 3) {
                         printf("Partie terminée ! Joueur %d a gagné.\n", fin);
-                    }else{
+                    } else {
                         printf("Partie nulle !\n");
                     }
                     *winner = fin;
                 }
                 *current_player = 1;
             }
-        } 
+        }
+    }
+}
+
+TTF_Font* global_font = NULL;
+
+void GR0_draw_rounded_rect(SDL_Renderer* renderer, SDL_Rect rect, SDL_Color color, int radius) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+
+    SDL_Rect central_rect = {rect.x + radius, rect.y, rect.w - 2 * radius, rect.h};
+    SDL_RenderFillRect(renderer, &central_rect);
+
+
+    SDL_Rect left_rect = {rect.x, rect.y + radius, radius, rect.h - 2 * radius};
+    SDL_Rect right_rect = {rect.x + rect.w - radius, rect.y + radius, radius, rect.h - 2 * radius};
+    SDL_RenderFillRect(renderer, &left_rect);
+    SDL_RenderFillRect(renderer, &right_rect);
+
+    for (int w = 0; w < radius * 2; w++) {
+        for (int h = 0; h < radius * 2; h++) {
+            int dx = radius - w; 
+            int dy = radius - h; 
+            if ((dx * dx + dy * dy) <= (radius * radius)) {
+                SDL_RenderDrawPoint(renderer, rect.x + radius - dx, rect.y + radius - dy);
+                SDL_RenderDrawPoint(renderer, rect.x + rect.w - radius + dx - 1, rect.y + radius - dy);
+                SDL_RenderDrawPoint(renderer, rect.x + radius - dx, rect.y + rect.h - radius + dy - 1); 
+                SDL_RenderDrawPoint(renderer, rect.x + rect.w - radius + dx - 1, rect.y + rect.h - radius + dy - 1);
+            }
+        }
+    }
+}
+
+void GR0_draw_button(SDL_Renderer* renderer, SDL_Rect rect, const char* label, SDL_Color color) {
+    static char lastLabel[100] = "";
+    static SDL_Texture* labelTexture = NULL;
+
+    if (strcmp(label, lastLabel) != 0) {
+        if (labelTexture) SDL_DestroyTexture(labelTexture);
+        labelTexture = GR0_renderText(renderer, global_font, label, (SDL_Color){0, 0, 0, 255});
+        strncpy(lastLabel, label, sizeof(lastLabel) - 1);
+    }
+
+    int mx, my;
+    SDL_GetMouseState(&mx, &my);
+
+    int is_hovered = GR0_in_rect(mx, my, rect);
+    if (is_hovered) {
+        rect.x -= 5; 
+        rect.y -= 5;
+        rect.w += 10;
+        rect.h += 10;
+    }
+
+    GR0_draw_rounded_rect(renderer, rect, color, 10); // Use rounded corners with a radius of 10
+
+    if (labelTexture) {
+        int texW, texH;
+        SDL_QueryTexture(labelTexture, NULL, NULL, &texW, &texH);
+        SDL_Rect dst = {rect.x + rect.w / 2 - texW / 2, rect.y + rect.h / 2 - texH / 2, texW, texH};
+        SDL_RenderCopy(renderer, labelTexture, NULL, &dst);
     }
 }
 
 void GR0_draw_cursor(SDL_Renderer* renderer, int position, int cursor_active, SDL_Color colors[COLOR_COUNT]) {
     if (!cursor_active) return;
 
-    // Limites du curseur
     int cursor_min = -100;
     int cursor_max = 100;
 
-    // Calcul de la position normalisée
     float norm = (float)(position - cursor_min) / (cursor_max - cursor_min);
     int cursor_y = GRID_OFFSET_Y + (int)(norm * (WINDOW_HEIGHT - GRID_OFFSET_Y * 2));
 
-    // Décalage et largeur du curseur
     int cursor_x = 30; // Décalage vers la gauche
     int cursor_width = 20; // Largeur élargie
     SDL_Color c = colors[1];
-    // Dessiner la zone bleue en haut
+
     SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, 255); // Bleu
     SDL_Rect blueZone = {cursor_x, GRID_OFFSET_Y, cursor_width, cursor_y - GRID_OFFSET_Y};
     SDL_RenderFillRect(renderer, &blueZone);
     c = colors[2];
-    // Dessiner la zone rouge en bas
+
     SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, 255); // Rouge
     SDL_Rect redZone = {cursor_x, cursor_y, cursor_width, WINDOW_HEIGHT - cursor_y - GRID_OFFSET_Y};
     SDL_RenderFillRect(renderer, &redZone);
 
-    // Dessiner le trait de séparation (curseur)
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Blanc
     SDL_Rect line = {cursor_x, cursor_y - 1, cursor_width, 2}; // Ligne fine
     SDL_RenderFillRect(renderer, &line);
 
-    // Dessiner une barre permanente au niveau de zéro
     int zero_y = GRID_OFFSET_Y + (WINDOW_HEIGHT - GRID_OFFSET_Y * 2) / 2; // Position verticale pour zéro
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255); // Gris clair
     SDL_Rect zeroLine = {cursor_x - 10, zero_y - 1, cursor_width + 20, 2}; // Barre horizontale
     SDL_RenderFillRect(renderer, &zeroLine);
 
-    // Afficher les valeurs 100 (en haut) et -100 (en bas)
-    TTF_Font* font = TTF_OpenFont("arial.ttf", 16); // Charger une police (assurez-vous que la police est disponible)
-    if (!font) {
-        SDL_Log("Erreur chargement police : %s", TTF_GetError());
-        return;
+    if (global_font) {
+        SDL_Color textColor = {255, 255, 255, 255};
+        GR0_draw_text(renderer, global_font, "100", textColor, cursor_x + cursor_width / 2, GRID_OFFSET_Y - 10); // En haut
+        GR0_draw_text(renderer, global_font, "-100", textColor, cursor_x + cursor_width / 2, WINDOW_HEIGHT - GRID_OFFSET_Y + 10); // En bas
     }
-
-    SDL_Color textColor = {255, 255, 255, 255}; // Blanc
-    GR0_draw_text(renderer, font, "100", textColor, cursor_x + cursor_width / 2, GRID_OFFSET_Y - 10); // En haut
-    GR0_draw_text(renderer, font, "-100", textColor, cursor_x + cursor_width / 2, WINDOW_HEIGHT - GRID_OFFSET_Y + 10); // En bas
-
-    TTF_CloseFont(font); // Fermer la police
 }
-void GR0_draw_button(SDL_Renderer* renderer, SDL_Rect rect, const char* label, SDL_Color color) {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderFillRect(renderer, &rect);
-}
-
-
 
 void GR0_draw_slider(SDL_Renderer* renderer, int value) {
-    // Ligne
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
     SDL_Rect line = {SLIDER_X, SLIDER_Y, SLIDER_WIDTH, SLIDER_HEIGHT};
     SDL_RenderFillRect(renderer, &line);
 
-    // Curseur
     float norm = (float)(value - GRID_MIN) / (GRID_MAX - GRID_MIN);
     int knobX = SLIDER_X + (int)(norm * SLIDER_WIDTH);
 
@@ -196,94 +271,99 @@ void GR0_draw_slider(SDL_Renderer* renderer, int value) {
     SDL_RenderFillRect(renderer, &knob);
 }
 
-
-
 void GR0_draw_menu(SDL_Renderer* renderer, TTF_Font* font, int grid_size) {
     SDL_Rect startBtn = {300, 150, 200, 60};
     SDL_Rect opponentBtn = {300, 240, 200, 60};
     SDL_Rect quitBtn  = {300, 330, 200, 60};
 
-    GR0_draw_button(renderer, startBtn, "", (SDL_Color){0, 200, 0, 255});
-    GR0_draw_button(renderer, opponentBtn, "", (SDL_Color){0, 0, 200, 255});
-    GR0_draw_button(renderer, quitBtn, "", (SDL_Color){200, 0, 0, 255});
+    int mx, my;
+    SDL_GetMouseState(&mx, &my);
 
-    GR0_draw_text(renderer, font, "Démarrer", (SDL_Color){255,255,255,255}, startBtn.x + startBtn.w/2, startBtn.y + startBtn.h/2);
-    GR0_draw_text(renderer, font, "Adversaire", (SDL_Color){255,255,255,255}, opponentBtn.x + opponentBtn.w/2, opponentBtn.y + opponentBtn.h/2);
-    GR0_draw_text(renderer, font, "Quitter", (SDL_Color){255,255,255,255}, quitBtn.x + quitBtn.w/2, quitBtn.y + quitBtn.h/2);
+    GR0_draw_button(renderer, startBtn, "Démarrer", (SDL_Color){0, 200, 0, 255});
+    GR0_draw_button(renderer, opponentBtn, "Adversaire", (SDL_Color){0, 0, 200, 255});
+    GR0_draw_button(renderer, quitBtn, "Quitter", (SDL_Color){200, 0, 0, 255});
     
+    TTF_SetFontSize(font, 24); 
     GR0_draw_text(renderer, font, "Taille de la grille :", (SDL_Color){255, 255, 255, 255}, WINDOW_WIDTH / 2, SLIDER_Y - 30);
     GR0_draw_slider(renderer, grid_size);
-
-    char buf[20];
-    snprintf(buf, sizeof(buf), "%d x %d", grid_size, grid_size);
-    GR0_draw_text(renderer, font, buf, (SDL_Color){255, 255, 255, 255}, WINDOW_WIDTH / 2, SLIDER_Y + 30);
+    char gridSizeText[20];
+    snprintf(gridSizeText, sizeof(gridSizeText), "%d x %d", grid_size, grid_size);
+    GR0_draw_text(renderer, font, gridSizeText, (SDL_Color){255, 255, 255, 255}, WINDOW_WIDTH / 2, SLIDER_Y + 50);
 }
 
-void GR0_draw_hovered_cell(SDL_Renderer* renderer, int mouseX, int mouseY, SDL_Color colors[COLOR_COUNT],GameState* etat) {
+void GR0_draw_hovered_cell(SDL_Renderer* renderer, int mouseX, int mouseY, SDL_Color colors[COLOR_COUNT], GameState* etat, int player, int* position, Queue* hover_network, Queue shots_available[7], int* swap_sides,int* swapchoice) {
     int gy = (mouseX - GRID_OFFSET_X) / CELL_SIZE;
     int gx = (mouseY - GRID_OFFSET_Y) / CELL_SIZE;
 
-    if (gx >= 0 && gx < etat->size && gy >= 0 && gy < etat->size) {
-        SDL_Color c = colors[get_map_value(etat, gx, gy)];
-        Queue hover_network;
-        GR0_initQueue(&hover_network);
+    // Apply 180-degree rotation if swap_sides is enabled
+    if (*swapchoice && *swap_sides) {
+        gx = etat->size - 1 - gx;
+        gy = etat->size - 1 - gy;
+    }
 
-        GR0_get_network(etat, (int[2]){gx, gy}, &hover_network, NULL);
-        int length = hover_network.length;
+    if (gx < 0 || gx >= etat->size || gy < 0 || gy >= etat->size) {
+        return;
+    }
 
-        int positions[length][2];
-        for (int i = 0; i < length; i++) {
-            GR0_dequeue(&hover_network, positions[i]);
+    if (gx != position[0] || gy != position[1]) {
+        GR0_resetQueue(hover_network);
+        GR0_get_network(etat, (int[2]){gx, gy}, hover_network, NULL);
+        position[0] = gx;
+        position[1] = gy;
+    }
+
+    Queue* hovernet = GR0_copyQueue(hover_network);
+    SDL_Color c = colors[get_map_value(etat, gx, gy)];
+    int length = hover_network->length;
+
+    int positions[length][2];
+    for (int i = 0; i < length; i++) {
+        GR0_dequeue(hovernet, positions[i]);
+    }
+
+    for (int i = 0; i < length; i++) {
+        int draw_x = positions[i][1];
+        int draw_y = positions[i][0];
+
+        // Apply 180-degree rotation to hovered cells if swap_sides is enabled
+        if (*swapchoice &&*swap_sides) {
+            draw_x = etat->size - 1 - positions[i][1];
+            draw_y = etat->size - 1 - positions[i][0];
         }
 
-        #pragma omp parallel for
-        for (int i = 0; i < length; i++) {
-            SDL_Rect cell = {
-                GRID_OFFSET_X + positions[i][1] * CELL_SIZE + 2,
-                GRID_OFFSET_Y + positions[i][0] * CELL_SIZE + 2,
-                CELL_SIZE - 4,
-                CELL_SIZE - 4
-            };
-            #pragma omp critical
-            {
-                SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, 50);
-                SDL_RenderFillRect(renderer, &cell);
-
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 100);
-                for (int j = 0; j < 2; j++) {
-                    SDL_Rect border = {
-                        cell.x - j, cell.y - j,
-                        cell.w + 2 * j, cell.h + 2 * j
-                    };
-                    SDL_RenderDrawRect(renderer, &border);
-                }
-            }
-        }
-
-        GR0_freeQueue(&hover_network);
-
-        // Afficher le numéro du joueur si la case appartient à un joueur
-        int player = get_map_value(etat, gx, gy);
-        if (player == PLAYER1_COLOR || player == PLAYER2_COLOR) {
-            char playerText[2];
-            snprintf(playerText, sizeof(playerText), "%d", player);
-            GR0_draw_text(renderer, TTF_OpenFont("arial.ttf", 16), playerText,
-                      (SDL_Color){255, 255, 255, 255},
-                      GRID_OFFSET_X + gy * CELL_SIZE + CELL_SIZE / 2,
-                      GRID_OFFSET_Y + gx * CELL_SIZE + CELL_SIZE / 2);
-        }
+        SDL_Rect cell = {
+            GRID_OFFSET_X + draw_x * CELL_SIZE + 2,
+            GRID_OFFSET_Y + draw_y * CELL_SIZE + 2,
+            CELL_SIZE - 3,
+            CELL_SIZE - 3
+        };
+        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, 50);
+        SDL_RenderFillRect(renderer, &cell);
     }
 }
 
 void GR0_draw_turn_info(SDL_Renderer* renderer, TTF_Font* font, int player) {
-    char buffer[50];
-    snprintf(buffer, sizeof(buffer), "Tour du joueur %d", player);
+    static SDL_Texture* turnTextTexture = NULL;
+    static int lastPlayer = -1;
 
-    GR0_draw_text(renderer, font, buffer, (SDL_Color){255, 255, 255, 255},
-              WINDOW_WIDTH / 2, GRID_OFFSET_Y - 20);
+    if (player != lastPlayer) {
+        if (turnTextTexture) SDL_DestroyTexture(turnTextTexture);
+
+        char buffer[50];
+        snprintf(buffer, sizeof(buffer), "Tour du joueur %d", player);
+        turnTextTexture = GR0_renderText(renderer, font, buffer, (SDL_Color){255, 255, 255, 255});
+        lastPlayer = player;
+    }
+
+    if (turnTextTexture) {
+        int texW, texH;
+        SDL_QueryTexture(turnTextTexture, NULL, NULL, &texW, &texH);
+        SDL_Rect dst = {WINDOW_WIDTH / 2 - texW / 2, GRID_OFFSET_Y - 20 - texH / 2, texW, texH};
+        SDL_RenderCopy(renderer, turnTextTexture, NULL, &dst);
+    }
 }
 
-void GR0_draw_grid(SDL_Renderer* renderer, TTF_Font* font, GameState* etat, SDL_Color colors[COLOR_COUNT]) {
+void GR0_draw_grid(SDL_Renderer* renderer, TTF_Font* font, GameState* etat, SDL_Color colors[COLOR_COUNT], int* swap_sides,int* swapchoice) {
     if (etat->map == NULL) {
         SDL_Log("Erreur : la grille n'est pas initialisée.");
         return;
@@ -291,63 +371,126 @@ void GR0_draw_grid(SDL_Renderer* renderer, TTF_Font* font, GameState* etat, SDL_
 
     for (int y = 0; y < etat->size; y++) {
         for (int x = 0; x < etat->size; x++) {
-            SDL_Color c = colors[get_map_value(etat,y,x)];
+            int draw_x = x;
+            int draw_y = y;
+
+            // Apply 180-degree rotation if swap_sides is enabled
+            if (*swapchoice && *swap_sides) {
+                draw_x = etat->size - 1 - x;
+                draw_y = etat->size - 1 - y;
+            }
+
+            SDL_Color c = colors[get_map_value(etat, y, x)];
             SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
 
             SDL_Rect cell = {
-                GRID_OFFSET_X + x * CELL_SIZE + CELL_PADDING / 2,
-                GRID_OFFSET_Y + y * CELL_SIZE + CELL_PADDING / 2,
+                GRID_OFFSET_X + draw_x * CELL_SIZE + CELL_PADDING / 2,
+                GRID_OFFSET_Y + draw_y * CELL_SIZE + CELL_PADDING / 2,
                 CELL_SIZE - CELL_PADDING,
                 CELL_SIZE - CELL_PADDING
             };
             SDL_RenderFillRect(renderer, &cell);
 
-            // Afficher "1" ou "2" si c’est une cellule de joueur
-            if (get_map_value(etat,y,x) == PLAYER1_COLOR) {
+            if (get_map_value(etat, y, x) == PLAYER1_COLOR) {
                 GR0_draw_text(renderer, font, "1", (SDL_Color){0, 0, 0, 255},
                     cell.x + cell.w / 2, cell.y + cell.h / 2);
-            } else if (get_map_value(etat,y,x) == PLAYER2_COLOR) {
+            } else if (get_map_value(etat, y, x) == PLAYER2_COLOR) {
                 GR0_draw_text(renderer, font, "2", (SDL_Color){0, 0, 0, 255},
                     cell.x + cell.w / 2, cell.y + cell.h / 2);
             }
         }
     }
 }
-void GR0_draw_game_controls(SDL_Renderer* renderer, TTF_Font* font,int* cursor_active, int* winner) {
-    // Décalage des boutons vers la droite
-    int button_offset_x = GRID_OFFSET_X - 180; // Décalage pour éviter la collision avec la grille
 
-    SDL_Rect cursorToggleBtn = {button_offset_x, GRID_OFFSET_Y, 150, 50}; // Bouton pour activer/désactiver le curseur
-    SDL_Rect backToMenuBtn = {button_offset_x, GRID_OFFSET_Y + 60, 150, 50}; // Bouton pour revenir au menu
-
-    // Définir la couleur du bouton en fonction de l'état du curseur
-    SDL_Color button_color = *cursor_active ? (SDL_Color){0, 200, 0, 255} : (SDL_Color){200, 0, 0, 255};
-
-    // Bouton pour activer/désactiver le curseur
-    GR0_draw_button(renderer, cursorToggleBtn, "", button_color);
-
-    // Dessiner le texte sur deux lignes
-    GR0_draw_text(renderer, font, *cursor_active ? "Désactiver" : "Activer",
-              (SDL_Color){0, 0, 0, 255}, cursorToggleBtn.x + cursorToggleBtn.w / 2, cursorToggleBtn.y + 10);
-    GR0_draw_text(renderer, font, "Evaluation",
-              (SDL_Color){0, 0, 0, 255}, cursorToggleBtn.x + cursorToggleBtn.w / 2, cursorToggleBtn.y + 30);
-
-    // Bouton pour revenir au menu
-    GR0_draw_button(renderer, backToMenuBtn, "", (SDL_Color){200, 200, 0, 255});
-    GR0_draw_text(renderer, font, "Retour Menu",
-              (SDL_Color){0, 0, 0, 255}, backToMenuBtn.x + backToMenuBtn.w / 2, backToMenuBtn.y + backToMenuBtn.h / 2);
-
-    // Afficher le bouton de victoire si un joueur a gagné
-    if (*winner != 0) {
-        SDL_Rect replayBtn = {WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT / 2 - 30, 400, 60};
-        GR0_draw_button(renderer, replayBtn, "", (SDL_Color){0, 200, 0, 255});
-        char buffer[50];
-        if(*winner !=3){snprintf(buffer, sizeof(buffer), "Le joueur %d a gagné ! Rejouer ?", *winner);
-        }else{snprintf(buffer, sizeof(buffer), "Partie nulle ! Rejouer ?");}
-        GR0_draw_text(renderer, font, buffer, (SDL_Color){255, 255, 255, 255}, replayBtn.x + replayBtn.w / 2, replayBtn.y + replayBtn.h / 2);
+void GR0_display_hint(SDL_Renderer* renderer, GameState* etat, int current_player, int* swapchoice, int* swap_sides) {
+    Queue moves[7];
+    GR0_initQueues(moves);
+    GR0_get_total_moves(etat, current_player, moves);
+    Color shot = GR0_minmax8(etat, current_player);
+    if (shot == -1) {
+        printf("Abandon %d.\n", current_player);
+        return;
     }
+
+    int length = moves[shot].length;
+
+    int positions[length][2];
+    for (int i = 0; i < length; i++) {
+        GR0_dequeue(&moves[shot], positions[i]);
+    }
+
+    GR0_freeQueues(moves);
+
+    SDL_Color c = colors[current_player];
+    SDL_Color c2 = colors[get_map_value(etat, positions[0][0], positions[0][1])];
+    for (int i = 0; i < length; i++) {
+        int draw_x = positions[i][1];
+        int draw_y = positions[i][0];
+
+        if (*swapchoice && *swap_sides) {
+            draw_x = etat->size - 1 - positions[i][1];
+            draw_y = etat->size - 1 - positions[i][0];
+        }
+
+        SDL_Rect outerRect = {
+            GRID_OFFSET_X + draw_x * CELL_SIZE - 2,
+            GRID_OFFSET_Y + draw_y * CELL_SIZE - 2,
+            CELL_SIZE + 4,
+            CELL_SIZE + 4
+        };
+        SDL_Rect innerRect = {
+            GRID_OFFSET_X + draw_x * CELL_SIZE + 2,
+            GRID_OFFSET_Y + draw_y * CELL_SIZE + 2,
+            CELL_SIZE - 3,
+            CELL_SIZE - 3
+        };
+
+        // Draw the outer rectangle (halo)
+        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, 100); // Semi-transparent color
+        SDL_RenderFillRect(renderer, &outerRect);
+
+        // Clear the inner rectangle to create the border effect
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // Transparent (background color)
+        SDL_RenderFillRect(renderer, &innerRect);
+
+        // Draw the actual square
+        SDL_SetRenderDrawColor(renderer, c2.r, c2.g, c2.b, 255); // Solid color
+        SDL_RenderFillRect(renderer, &innerRect);
+    }
+
+    return;
+
 }
 
+void GR0_draw_game_controls(SDL_Renderer* renderer, TTF_Font* font, int* cursor_active, int* winner, int* swapchoice, int* hint) {
+    int button_offset_x = GRID_OFFSET_X - 180;
+
+    SDL_Rect cursorToggleBtn = {button_offset_x, GRID_OFFSET_Y, 150, 50};
+    SDL_Rect backToMenuBtn = {button_offset_x, GRID_OFFSET_Y + 70, 150, 50}; // Adjusted spacing
+    SDL_Rect hintBtn = {button_offset_x, GRID_OFFSET_Y + 140, 150, 50}; // Adjusted spacing
+    SDL_Rect swapSidesBtn = {button_offset_x, GRID_OFFSET_Y + 210, 150, 50}; // Adjusted spacing
+    SDL_Rect resignBtn = {button_offset_x, WINDOW_HEIGHT - GRID_OFFSET_Y - 50, 150, 50}; // Bottom-left
+
+    GR0_draw_button(renderer, cursorToggleBtn, "Évaluation",
+                    *cursor_active ? (SDL_Color){0, 200, 0, 255} : (SDL_Color){200, 0, 0, 255});
+
+    GR0_draw_button(renderer, backToMenuBtn, "Retour Menu", (SDL_Color){200, 200, 0, 255});
+    GR0_draw_button(renderer, resignBtn, "Abandonner", (SDL_Color){200, 0, 0, 255});
+    GR0_draw_button(renderer, hintBtn, "Hint", *hint ? (SDL_Color){200, 0, 0, 255} : (SDL_Color){0, 200, 200, 255});
+    GR0_draw_button(renderer, swapSidesBtn, "Rotation",
+                    *swapchoice ? (SDL_Color){0, 200, 0, 255} : (SDL_Color){200, 0, 0, 255});
+
+    if (*winner != 0) {
+        SDL_Rect replayBtn = {WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT / 2 - 30, 400, 60};
+        char buffer[50];
+        if (*winner != 3) {
+            snprintf(buffer, sizeof(buffer), "Le joueur %d a gagné ! Rejouer ?", *winner);
+        } else {
+            snprintf(buffer, sizeof(buffer), "Partie nulle ! Rejouer ?");
+        }
+        GR0_draw_button(renderer, replayBtn, buffer, (SDL_Color){0, 200, 0, 255});
+    }
+}
 
 int GR0_visual_main() {
     int current_player = 1;
@@ -355,9 +498,14 @@ int GR0_visual_main() {
     int cursor_active = 0;
     int cursor_position = 0;
     int grid_size = 8;
-    int agent =-1;
+    int agent = -1;
+    int position[2] = {0, 0};
+    int swap_sides = 0;
+    int swapchoice = 0;
+    int hint = 0;
     GameState etat = {.map = NULL, .size = 0};
-
+    Queue hovernet;
+    GR0_initQueue(&hovernet);
     TTF_Init();
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window* window = SDL_CreateWindow("7 Colors",
@@ -375,8 +523,8 @@ int GR0_visual_main() {
         return 1;
     }
     
-    TTF_Font* font = TTF_OpenFont("arial.ttf", 24);
-    if (!font) {
+    global_font = TTF_OpenFont("arial.ttf", 24); // Load the font once
+    if (!global_font) {
         SDL_Log("Erreur chargement police : %s", TTF_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
@@ -389,7 +537,11 @@ int GR0_visual_main() {
     int running = 1;
     Queue moves[7];
     GR0_initQueues(moves);
+    GR0_get_move_available(&etat,current_player,moves);
+    int mx, my; // Declare mx and my at the beginning of the function
     while (running) {
+        SDL_GetMouseState(&mx, &my); // Update mx and my at the start of each frame
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT)
                 running = 0;
@@ -412,7 +564,6 @@ int GR0_visual_main() {
                         }
                     }
                 
-                    // Autres conditions pour les boutons (menu, quitter, etc.)
                 if (state == MENU) {
                     SDL_Rect startBtn = {300, 150, 200, 60};
                     SDL_Rect opponentBtn = {300, 240, 200, 60};
@@ -440,7 +591,6 @@ int GR0_visual_main() {
                             state = MENU;
                         }
                         GR0_draw_button(renderer, btn, "", (SDL_Color){0, 200, 200, 255});
-
                         // Afficher le nom de l'agent sur trois lignes
                         char line1[20] = {0}, line2[20] = {0}, line3[20] = {0};
                         snprintf(line1, sizeof(line1), "%.10s", agent_names[i]); // Première ligne (10 caractères max)
@@ -451,66 +601,91 @@ int GR0_visual_main() {
                             snprintf(line3, sizeof(line3), "%.10s", agent_names[i] + 20); // Troisième ligne (reste du nom)
                         }
 
-                        GR0_draw_text(renderer, font, line1, (SDL_Color){255, 255, 255, 255},
+                        GR0_draw_text(renderer, global_font, line1, (SDL_Color){255, 255, 255, 255},
                                   btn.x + btn.w / 2, btn.y + btn.h / 4); // Ligne 1
                         if (strlen(line2) > 0) { // Afficher la deuxième ligne uniquement si elle n'est pas vide
-                            GR0_draw_text(renderer, font, line2, (SDL_Color){255, 255, 255, 255},
+                            GR0_draw_text(renderer, global_font, line2, (SDL_Color){255, 255, 255, 255},
                                       btn.x + btn.w / 2, btn.y + btn.h / 2); // Ligne 2
                         }
                         if (strlen(line3) > 0) { // Afficher la troisième ligne uniquement si elle n'est pas vide
-                            GR0_draw_text(renderer, font, line3, (SDL_Color){255, 255, 255, 255},
+                            GR0_draw_text(renderer, global_font, line3, (SDL_Color){255, 255, 255, 255},
                                       btn.x + btn.w / 2, btn.y + 3 * btn.h / 4); // Ligne 3
                         }
                     }
                 } else if (state == GAME) {
-                    GR0_handle_grid_click(x, y, moves, &current_player, &etat, agent, &winner, &cursor_position, cursor_active,FUNC_ARRAY);
-                
-                    // Gérer le bouton de victoire
-                    if (winner != 0) {
-                        SDL_Rect replayBtn = {WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT / 2 - 30, 300, 60};
-                        if (GR0_in_rect(x, y, replayBtn)) {
+                    SDL_Rect cursorToggleBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y, 150, 50};
+                    SDL_Rect backToMenuBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y + 70, 150, 50}; // Adjusted spacing
+                    SDL_Rect hintBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y + 140, 150, 50}; // Adjusted spacing
+                    SDL_Rect swapSidesBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y + 210, 150, 50}; // Adjusted spacing
+                    SDL_Rect resignBtn = {GRID_OFFSET_X - 180, WINDOW_HEIGHT - GRID_OFFSET_Y - 50, 150, 50}; // Bottom-left
 
-                            GR0_initialize(&etat, grid_size);
-                            current_player = 1;
+                    if (winner != 0) {
+                        SDL_Rect replayBtn = {WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT / 2 - 30, 400, 60};
+                        if (GR0_in_rect(x, y, replayBtn)) {
+                            // Réinitialiser l'état du jeu
                             winner = 0;
-                            printf("Partie réinitialisée.\n");
+                            current_player = 1;
+                            cursor_active = 0;
+                            cursor_position = 0;
+                            swap_sides = 0;
+                            swapchoice = 0;
+                            hint = 0;
+                            GR0_initialize(&etat, grid_size);
+                            GR0_resetQueue(&hovernet);
+                            GR0_initQueues(moves);
+                            printf("Partie redémarrée.\n");
                         }
                     }
-                
-                    SDL_Rect cursorToggleBtn = {50, GRID_OFFSET_Y, 150, 50};
-                    SDL_Rect backToMenuBtn = {50, GRID_OFFSET_Y + 60, 150, 50};
-                    if (GR0_in_rect(x, y, backToMenuBtn)) {
-                        state = MENU; 
-                        printf("Retour au menu principal.\n");
-                    }
+
                     if (GR0_in_rect(x, y, cursorToggleBtn)) {
                         cursor_active = !cursor_active;
-                        if(cursor_active) {
-                            GR0_update_cursor(&etat,current_player, &cursor_position, cursor_active);
+                        if (cursor_active) {
+                            GR0_update_cursor(&etat, current_player, &cursor_position, cursor_active);
                         }
-                        printf("Curseur %s\n", cursor_active ? "activé" : "désactivé");
+                    }
+                    if (GR0_in_rect(x, y, backToMenuBtn)) {
+                        state = MENU;
+                        printf("Retour au menu principal.\n");
+                    }
+                    if (GR0_in_rect(x, y, hintBtn)) {
+                        hint = 1;
+                    }
+                    if (GR0_in_rect(x, y, swapSidesBtn)) {
+                        swapchoice = !swapchoice;
+                    }
+
+                    if (GR0_in_rect(x, y, resignBtn)) {
+                        winner = (current_player == 1) ? 2 : 1; // L'autre joueur gagne
+                        printf("Le joueur %d a abandonné. Le joueur %d gagne.\n", current_player, winner);
+                    }
+                    if (GR0_in_rect(x, y, hintBtn)) {
+                        hint =1;
+                    }
+                    if (x >= GRID_OFFSET_X && x < GRID_OFFSET_X + etat.size * CELL_SIZE &&
+                        y >= GRID_OFFSET_Y && y < GRID_OFFSET_Y + etat.size * CELL_SIZE){
+                        GR0_handle_grid_click(x, y, moves, &current_player, &etat, agent, &winner, &cursor_position, cursor_active, FUNC_ARRAY, &swap_sides,&swapchoice,&hint);
                     }
                 }
-                    
-                
             }
         }
-
         SDL_SetRenderDrawColor(renderer, 80, 45, 20, 255);
         SDL_RenderClear(renderer);
 
         if (state == MENU) {
-            GR0_draw_menu(renderer, font, grid_size);
+            GR0_draw_menu(renderer, global_font, grid_size);
         } else if (state == GAME) {
 
-            GR0_draw_turn_info(renderer, font, current_player);
-            GR0_draw_grid(renderer, font, &etat, colors);
-            int mx, my;
-            SDL_GetMouseState(&mx, &my);
-            GR0_draw_hovered_cell(renderer, mx, my, colors, &etat);
+            GR0_draw_turn_info(renderer, global_font, current_player);
+            GR0_draw_grid(renderer, global_font, &etat, colors, &swap_sides,&swapchoice);
+            
+            if(hint){
+                GR0_display_hint(renderer,&etat,current_player,&swap_sides,&swapchoice);
+            }
+            
+            GR0_draw_hovered_cell(renderer, mx, my, colors, &etat,current_player, position, &hovernet,moves, &swap_sides,&swapchoice);
             
             GR0_draw_cursor(renderer, cursor_position, cursor_active, colors);
-            GR0_draw_game_controls(renderer, font, &cursor_active, &winner);
+            GR0_draw_game_controls(renderer, global_font, &cursor_active, &winner, &swapchoice,&hint);
 
         } else if (state == SELECT_OPPONENT) {
             for (int i = 0; i < 8; ++i) {
@@ -532,14 +707,14 @@ int GR0_visual_main() {
                     snprintf(line3, sizeof(line3), "%.10s", agent_names[i] + 20); // Troisième ligne (reste du nom)
                 }
 
-                GR0_draw_text(renderer, font, line1, (SDL_Color){255, 255, 255, 255},
+                GR0_draw_text(renderer, global_font, line1, (SDL_Color){255, 255, 255, 255},
                           btn.x + btn.w / 2, btn.y + btn.h / 4); // Ligne 1
                 if (strlen(line2) > 0) { // Afficher la deuxième ligne uniquement si elle n'est pas vide
-                    GR0_draw_text(renderer, font, line2, (SDL_Color){255, 255, 255, 255},
+                    GR0_draw_text(renderer, global_font, line2, (SDL_Color){255, 255, 255, 255},
                               btn.x + btn.w / 2, btn.y + btn.h / 2); // Ligne 2
                 }
                 if (strlen(line3) > 0) { // Afficher la troisième ligne uniquement si elle n'est pas vide
-                    GR0_draw_text(renderer, font, line3, (SDL_Color){255, 255, 255, 255},
+                    GR0_draw_text(renderer, global_font, line3, (SDL_Color){255, 255, 255, 255},
                               btn.x + btn.w / 2, btn.y + 3 * btn.h / 4); // Ligne 3
                 }
             }
@@ -547,14 +722,16 @@ int GR0_visual_main() {
         SDL_RenderPresent(renderer);
         SDL_Delay(30);
     }
+
+    TTF_CloseFont(global_font); // Close the font once
+    global_font = NULL;
     SDL_DestroyRenderer(renderer);
     renderer = NULL;
     SDL_DestroyWindow(window);
     window = NULL;
-    TTF_CloseFont(font);
-    font = NULL;
     SDL_Quit();
     TTF_Quit();
+    GR0_freeQueue(&hovernet);
     GR0_freeQueues(moves);
     GR0_free_state(&etat);
     return 0;

@@ -8,7 +8,7 @@ int main(int argc, char** argv){
     int choix = 0;
     printf("Bienvenue dans le jeu des 7 couleurs !\n");
     printf("Choisissez une option :\n");
-    printf("[1] Jouer dans la console (pour l'évaluation et le test)\n");
+    printf("[1] Jouer dans le mode Arène (pour l'évaluation et le test)\n");
     printf("[2] Jouer dans l'interface graphique\n");
     while(choix != 1 && choix != 2) {
         printf("Entrez votre choix (1 ou 2) : ");

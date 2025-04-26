@@ -36,7 +36,11 @@ int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)
             fin = 1; // Joueur 1 gagne si Joueur 2 ne peut pas jouer
             break;
         }
+        time_t start_time = clock();
         coup = decision2(&etat, 2);
+        time_t end_time = clock();
+        double elapsed_time = (double)(end_time - start_time) / (10*CLOCKS_PER_SEC);
+        printf("Execution time of %s: %.6f seconds\n", "elo_ranking", elapsed_time);
         if (coup == -1) {
             fin = 1; 
             break;
@@ -150,7 +154,7 @@ int GR0_evaluation_main(){
         clock_t start_time = clock();
         GR0_elo_ranking(choix);
         clock_t end_time = clock();
-        double elapsed_time = (double)(end_time - start_time) / (10*CLOCKS_PER_SEC);
+        double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
         printf("Execution time of %s: %.6f seconds\n", "elo_ranking", elapsed_time);
 	} else{
 		double sum=0;

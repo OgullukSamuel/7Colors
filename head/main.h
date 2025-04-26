@@ -1,8 +1,8 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "console.h"
-#include "sdl.h"
+#include "../head/console.h"
+#include "../head/sdl.h"
 
 #include "../head/GameState.h"
 
