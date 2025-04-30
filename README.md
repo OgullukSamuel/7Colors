@@ -22,7 +22,7 @@ A ces fichiers s'ajoutent leurs entêtes, la police d'écriture Arial, utilisée
 
 Bon jeu !
 
-![Capture d’écran 2025-04-20 021912](https://github.com/user-attachments/assets/ce3e67df-218e-4f19-9694-1621c3c9e8ae)
+![image](https://github.com/user-attachments/assets/5565e489-3eaa-4bb3-a5b2-ef01ebbe39c8)
 
+![image](https://github.com/user-attachments/assets/2b826f8f-0df2-4289-a06f-c8edc65c5dbd)
 
-![Capture d’écran 2025-04-20 021827](https://github.com/user-attachments/assets/c59c5d0d-f7fc-4e51-8fa5-758024b90f7d)
