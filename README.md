@@ -18,7 +18,7 @@ Le dossier suivant contient les éléments suivants:
 
 
 
-A ces fichiers s'ajoutent leurs entêtes, la police d'écriture Arial, utilisée pour les écritures dans le mode graphique, ainsi qu'un makefile. Ce makefile permet de créer un executable, appelé :"execute_moi" qui contient le programme et ses deux modes d'utilisation.
+A ces fichiers s'ajoutent leurs entêtes, la police d'écriture Arial, utilisée pour les écritures dans le mode graphique, ainsi qu'un makefile. Ce makefile permet de créer un executable, appelé :"7color" qui contient le programme et ses deux modes d'utilisation.
 
 Bon jeu !
 
