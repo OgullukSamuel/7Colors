@@ -4,7 +4,6 @@
 #include "../head/queue.h"
 #include "../head/utilities.h"
 
-void GR0_free_state(GameState* state);
 
 void GR0_get_network(GameState* state,int *pos , Queue* explored,Queue* coup);
 

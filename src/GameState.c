@@ -14,8 +14,12 @@ void create_empty_game_state (GameState* state, int size){
 	}
 }
 
-void GR0_free_state(GameState* state){
-	free(state->map);
+void GR0_free_state(GameState* state) {
+    if (state->map) {
+		free(state->map);
+		state->map = NULL;
+    }
+return;
 }
 
 void set_map_value (GameState* state, int x, int y, Color value){
@@ -24,9 +28,8 @@ void set_map_value (GameState* state, int x, int y, Color value){
 
 
 Color get_map_value (GameState* state, int x, int y){
-    if (state->map == NULL || x >= state->size || y >= state->size || x < 0 || y < 0)
-{
-        printf("[ERREUR] map not big enough or not initialized %p %i access (%i %i)", state -> map, state->size, x, y);
+    if (state->map == NULL || x >= state->size || y >= state->size || x < 0 || y < 0){
+        printf("Erreur de la map ou des coordonnées\n");
         return ERROR;
     }
     return state->map[x * state->size + y];
@@ -40,13 +43,11 @@ void fill_map(GameState* map){
 
 void GR0_initialize(GameState* etat, int grid_size) {
     if (etat->map != NULL) {
-        GR0_free_state(etat); // Libérer la grille précédente si elle existe
+        GR0_free_state(etat);
     }
     srand(time(NULL) ^ clock());
-
 	create_empty_game_state(etat,grid_size);
 	fill_map(etat);
-
 	set_map_value(etat, 0, grid_size-1, 1);
 	set_map_value(etat, grid_size-1, 0, 2);
 }

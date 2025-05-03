@@ -2,7 +2,28 @@
 
 int Size;
 
-int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)(GameState*, Color), int affichage) {
+void save_float_array_to_file(float array[13][9], const char* filename) {
+    FILE* file = fopen(filename, "w");
+    if (!file) {
+        perror("Erreur d'ouverture du fichier");
+        return;
+    }
+
+    for (int i = 0; i < 13; ++i) {
+        for (int j = 0; j < 9; ++j) {
+            fprintf(file, "%.6f", array[i][j]);
+            if (j < 8) {
+                fputc(',', file);
+            }
+        }
+        fputc('\n', file);
+    }
+
+    fclose(file);
+}
+
+float GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)(GameState*, Color), int affichage) {
+    // Fonction pour jouer une partie entre deux agents
     Queue moves[7];
     GR0_initQueues(moves);
     GameState etat={.map = NULL, .size = 0};
@@ -36,11 +57,8 @@ int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)
             fin = 1; // Joueur 1 gagne si Joueur 2 ne peut pas jouer
             break;
         }
-        time_t start_time = clock();
+
         coup = decision2(&etat, 2);
-        time_t end_time = clock();
-        double elapsed_time = (double)(end_time - start_time) / (10*CLOCKS_PER_SEC);
-        printf("Execution time of %s: %.6f seconds\n", "elo_ranking", elapsed_time);
         if (coup == -1) {
             fin = 1; 
             break;
@@ -58,8 +76,35 @@ int GR0_Agent_vs_Agent(Color (*decision1)(GameState*, Color), Color (*decision2)
     return fin;
 }
 
-void GR0_elo_ranking(int choix) {
-    func_ptr func_array[NUM_AGENT]; // Declare func_array here
+void GR0_general_ranking(){
+    int sizes[13]={3,4,5,6,7,8,9,10,11,12,13,14,15};
+    float agents[13][NUM_AGENT]={0};
+    float agent_tempo[NUM_AGENT][3]={0};
+    for (int i=0;i<13;i++){
+        Size = sizes[i];
+        printf("Taille de la carte : %d\n", Size);
+        for(int j=0;j<3;j++){
+            printf("itération %d\n", j+1);
+            GR0_elo_ranking(2,agent_tempo[j]);
+            for (int k=0;k<NUM_AGENT;k++){
+                agents[i][k]+=agent_tempo[k][j]/3;
+            }
+        }
+    }
+    printf("Classement Elo des agents :\n");
+    for (int i=0;i<13;i++){
+        printf("Taille de la carte : %d\n", sizes[i]);
+        for (int j=0;j<NUM_AGENT;j++){
+            printf("Elo du joueur %d : %.2f\n", j+1, agents[i][j]);
+        }
+        printf("\n");
+    }
+    save_float_array_to_file(agents, "elo_ranking.csv");
+}
+
+void GR0_elo_ranking(int choix,float* agents) {
+    // Fonction pour classer les agents selon leur classement Elo 
+    func_ptr func_array[NUM_AGENT];
 
     if (choix == 1) {
         func_array[0] = &GR0_Glouton;
@@ -77,17 +122,17 @@ void GR0_elo_ranking(int choix) {
         func_array[1] = &GR0_Glouton;
         func_array[2] = &GR0_Glouton_heuristique;
         func_array[3] = &GR0_minmax3;
-        func_array[4] = &GR0_minmax7;
+        func_array[4] = &GR0_minmax8;
         func_array[5] = &GR0_frontier_IA5;
         func_array[6] = &GR0_frontier_IA5_heuristique;
         func_array[7] = &GR0_hegemonique;
-        func_array[8] = &GR0_hegemonique_heuristique;
+        func_array[8] = &GR0_mixte;
     }
 
     printf("Début du classement Elo\n");
     float elos[NUM_AGENT];
     int matches[NUM_AGENT] = {0};
-    const int nb_parties = 10000;
+    const int nb_parties = 10;
 
     for (int i = 0; i < NUM_AGENT; i++) {
         elos[i] = 1500;
@@ -133,30 +178,39 @@ void GR0_elo_ranking(int choix) {
 
     for (int i = 0; i < NUM_AGENT; i++) {
         printf("Elo du joueur %d : %.2f (matches joués : %d)\n", i + 1, elos[i], matches[i]);
+        if(agents != NULL) {agents[i] = elos[i];}
     }
+
 }
 
 int GR0_evaluation_main(){
+    // Fonction princpale pour le mode Arène
 	IAS ia;
 	GR0_question_IA_IA(&ia);
-    do{printf("Donne la taille de la carte que tu souhaites (entre 3 et 100): ");
-        scanf("%d", &Size);
-    }while(Size<3 || Size>100);
-	
+    
+    if(ia.elo!=2){
+        do{
+            printf("Donne la taille de la carte que tu souhaites: ");
+            scanf("%d", &Size);
+        } while(Size<3 || Size>1000);
+    }
     if(ia.elo==1){
         printf("choisis les agents:\n");
         printf("[1] Minmaxs   [2] Tous agents\n");
-        int choix = 0;
+        int choix = -1;
         do {
             printf("choix: ");
             scanf("%d", &choix);
         } while (choix != 1 && choix != 2);
         clock_t start_time = clock();
-        GR0_elo_ranking(choix);
+        GR0_elo_ranking(choix,NULL);
         clock_t end_time = clock();
         double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-        printf("Execution time of %s: %.6f seconds\n", "elo_ranking", elapsed_time);
-	} else{
+        printf("temps d'execution de l'elo : %.6f seconds\n", elapsed_time);
+    }
+    else if(ia.elo==2){
+        GR0_general_ranking();
+    } else{
 		double sum=0;
         float fin = 0;
 		for(int i=0;i<ia.affrontements;i++){
@@ -164,16 +218,14 @@ int GR0_evaluation_main(){
                 sum+=fin;}
             else{fin =GR0_Agent_vs_Agent(ia.decision2,ia.decision1,ia.affichage)-1;
                 sum+=fin;}
-            if(fin==1.5){printf("Partie nulle !\n");}
+            if(fin==0.5){printf("Partie nulle !\n");}
             else if(fin==1){printf("Le joueur 1 a gagné !\n");}
-            else if(fin==2){printf("Le joueur 2 a gagné !\n");}
-            else{printf("Erreur dans le résultat de la partie !\n");}
+            else if(fin==0){printf("Le joueur 2 a gagné !\n");}
+            else{printf("Erreur dans le résultat de la partie %f!\n",fin);}
 		}
 
 		double winrate= ((double)sum/ia.affrontements)*100;
 		printf("Winrate du joueur 1 :%.2f %% \n\n", winrate);	
 	}
-
-	
 	return 0;
 }

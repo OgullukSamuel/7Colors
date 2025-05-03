@@ -16,27 +16,33 @@ typedef struct {
 } Queue;
 
 int GR0_injection(int* values);
+
+void GR0_initQueue(Queue* q);
+void GR0_initQueues(Queue* q);
+
 void GR0_enqueue(Queue* q, int value[2]);
 void GR0_dequeue(Queue* q, int value[2]);
-void GR0_displayQueue(Queue* q);
-void GR0_initQueue(Queue* q);
 
-void GR0_initQueues(Queue* q);
+void GR0_displayQueue(Queue* q);
+void GR0_displayQueues(Queue* q);
+
 void GR0_resetQueue(Queue* q);
+void GR0_resetQueues(Queue* q);
 
-void GR0_resetQueues(Queue* q) ;
-void GR0_freeQueues(Queue* q);
-void GR0_displayQueue(Queue* q);
-void GR0_resizeQueue(Queue* q);
 void GR0_freeQueue(Queue* q); 
+void GR0_freeQueues(Queue* q);
+
+void GR0_resizeQueue(Queue* q);
+
 int GR0_isinQueue(Queue* q, int value[2]);
+
 void GR0_insert_sorted(Queue* q, int value[2]);
 
-void GR0_concatenateQueue(Queue* queue1, Queue* queue2);
-void GR0_freeQueue(Queue* q);
-Queue* GR0_copyQueue(Queue* original);
-void GR0_testQueue() ;
 
-void GR0_displayQueues(Queue* q);
+void GR0_concatenateQueue(Queue* queue1, Queue* queue2);
+void GR0_copyQueue(Queue* original,Queue* copy);
+
+void GR0_testQueue();
+
 
 #endif

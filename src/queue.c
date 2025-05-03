@@ -1,82 +1,87 @@
 #include "../head/queue.h"
 
-int injection(int* values){
+
+/*int injection(int* values){
     return((values[0]+values[1])*(values[0]+values[1]+1)+values[1]);
+}*/
+
+
+
+int injection(int* values) {
+    return (values[0] << 16) | (values[1] & 0xFFFF);
+}
+
+void GR0_initQueue(Queue *q) {
+    q->capacity = QUEUE_INIT_CAPACITY;
+    q->length = 0;
+    q->front = 0;
+    q->rear = -1;
+    q->items = malloc(q->capacity * sizeof(int) * 2); 
+    for (int i = 0; i < q->capacity * 2; i++) {
+        q->items[i] = -1;
+    }
+    q->sorted_values = malloc(q->capacity * sizeof(int)); 
+    for (int i = 0; i < q->capacity; i++) {
+        q->sorted_values[i] = -1; // Initialize to -1 or any other sentinel value
+    }
+    if (!q->items || !q->sorted_values) {
+        printf("ERMALLOC dans initQueue\n");
+        exit(1);
+    }
 }
 
 
-/*
-int injection(int* values) {
-    return (values[0] << 16) | (values[1] & 0xFFFF);
-}*/
-
 void GR0_concatenateQueue(Queue* queue1, Queue* queue2){
-    //on copie la queue 2 dans la queue 1
-    Queue* queue3=GR0_copyQueue(queue2);
-    for(int i=0; i<queue3->length; i++){
+    //on concatene la queue 2 dans la queue 1
+    Queue queue3;
+    GR0_copyQueue(queue2,&queue3);
+    for(int i=0; i<queue3.length; i++){
         int value[2];
-        GR0_dequeue(queue3, value);
+        GR0_dequeue(&queue3, value);
         GR0_enqueue(queue1, value);
     }
 }
 
-Queue* GR0_copyQueue(Queue* original) {
-    // Allocate memory for the new queue
-    Queue* copy = malloc(sizeof(Queue));
-    if (!copy) {
-        printf("[ERROR] Memory allocation failed in copyQueue\n");
-        exit(1);
-    }
-
-    // Initialize the new queue
+void GR0_copyQueue(Queue* original,Queue* copy) {
     GR0_initQueue(copy);
 
-    // Resize the new queue to match the original queue's capacity
     copy->capacity = original->capacity;
     copy->length = original->length;
     copy->front = original->front;
     copy->rear = original->rear;
 
-    // Allocate memory for items and sorted_values
     copy->items = malloc(copy->capacity * sizeof(int) * 2);
     copy->sorted_values = malloc(copy->capacity * sizeof(int));
     if (!copy->items || !copy->sorted_values) {
-        printf("[ERROR] Memory allocation failed in copyQueue\n");
+        printf("ERMALLOC2 dans copyQueue\n");
         GR0_freeQueue(copy);
-        free(copy);
         exit(1);
     }
 
-    // Copy the items array
     for (int i = 0; i < copy->capacity * 2; i++) {
         copy->items[i] = original->items[i];
     }
-
-    // Copy the sorted_values array
     for (int i = 0; i < copy->capacity; i++) {
         copy->sorted_values[i] = original->sorted_values[i];
     }
-
-    return copy;
+    return;
 }
 
 void GR0_resizeQueue(Queue* q) {
     int old_capacity = q->capacity;
-    int* new_items = malloc(2 * old_capacity * 2 * sizeof(int)); // double capacité (chaque élément = 2 int)
+    int* new_items = malloc(2 * old_capacity * 2 * sizeof(int));
     int* new_sorted_values = malloc(2 * old_capacity * sizeof(int));
     if (!new_items || !new_sorted_values) {
-        printf("[ERROR] Memory allocation failed in GR0_resizeQueue\n");
+        printf("ERMALLOC dans GR0_resizeQueue\n");
         exit(1);
     }
 
-    // Réaligner les éléments dans le nouvel array
     for (int i = 0; i < q->length; i++) {
         int index = (q->front + i) % old_capacity;
         new_items[2 * i] = q->items[2 * index];
         new_items[2 * i + 1] = q->items[2 * index + 1];
     }
 
-    // Copier sorted_values
     for (int i = 0; i < q->length; i++) {
         new_sorted_values[i] = q->sorted_values[i];
     }
@@ -95,34 +100,17 @@ void GR0_resizeQueue(Queue* q) {
     q->capacity = 2 * old_capacity;
 }
 
-void GR0_initQueue(Queue *q) {
-    q->capacity = QUEUE_INIT_CAPACITY;
-    q->length = 0;
-    q->front = 0;
-    q->rear = -1;
-    q->items = malloc(q->capacity * sizeof(int) * 2); 
-    for (int i = 0; i < q->capacity * 2; i++) {
-        q->items[i] = -1; // Initialize to -1 or any other sentinel value
-    }
-    q->sorted_values = malloc(q->capacity * sizeof(int)); 
-    for (int i = 0; i < q->capacity; i++) {
-        q->sorted_values[i] = -1; // Initialize to -1 or any other sentinel value
-    }
-    if (!q->items || !q->sorted_values) {
-        printf("[ERROR] Memory allocation failed in initQueue\n");
-        exit(1);
-    }
-}
 
 void GR0_freeQueue(Queue* q) {
     if (q->items) {
         free(q->items);
-        q->items = NULL; // Prevent double free
+        q->items = NULL; 
     }
     if (q->sorted_values) {
         free(q->sorted_values);
-        q->sorted_values = NULL; // Prevent double free
-    }
+        q->sorted_values = NULL;
+    } 
+    return;
 }
 
 void GR0_insert_sorted(Queue* q, int value[2]) {
@@ -137,7 +125,7 @@ void GR0_insert_sorted(Queue* q, int value[2]) {
             right = mid;
     }
     if (q->length == q->capacity) {
-        printf("[ERROR] Not enough capacity in sorted_values array\n");
+        printf("ER overflow de sorted_values\n");
         exit(1);
     }
 
@@ -210,7 +198,7 @@ int GR0_isinQueue(Queue* q, int value[2]) {
     return 0;
 }
 
-void GR0_freeQueues(Queue* q){
+void GR0_freeQueues(Queue* q) {
     for (int i = 0; i < 7; i++) {
         GR0_freeQueue(&q[i]);
     }
@@ -221,6 +209,7 @@ void GR0_initQueues(Queue* q){
         GR0_initQueue(&q[i]);
     }
 }
+
 void GR0_resetQueue(Queue* q) {
     q->length = 0;
     q->front = 0;
@@ -229,7 +218,7 @@ void GR0_resetQueue(Queue* q) {
 
     q->items = realloc(q->items, q->capacity * sizeof(int) * 2);
     if (!q->items) {
-        printf("[ERREUR] La réalocation mémoire objet a échouée dans resetQueue\n");
+        printf("ERREALLOC dans resetQueue\n");
         exit(1);
     }
     for (int i = 0; i < q->capacity * 2; i++) {
@@ -238,7 +227,7 @@ void GR0_resetQueue(Queue* q) {
 
     q->sorted_values = realloc(q->sorted_values, q->capacity * sizeof(int));
     if (!q->sorted_values) {
-        printf("[ERREUR] La réalocation mémoire triée a échouée dans resetQueue\n");
+        printf("ERREALLOC2 dans resetQueue\n");
         exit(1);
     }
     for (int i = 0; i < q->capacity; i++) {
@@ -279,12 +268,11 @@ void GR0_testQueue() {
 
     printf("Début du test des files\n");
 
-    // Test 1: Initialize the queue
     printf("Test 1: initialisation\n");
     GR0_initQueue(&q);
     GR0_displayQueue(&q);
 
-    // Test 2: Enqueue elements
+
     printf("Test 2: ajout d'élement\n");
     for (int i = 0; i < 10; i++) {
         value[0] = i;
@@ -293,7 +281,7 @@ void GR0_testQueue() {
     }
     GR0_displayQueue(&q);
 
-    // Test 3: Dequeue elements
+
     printf("Test 3: enlever les éléments\n");
     printf("Queue length: %d\n", q.length);
     printf("Queue capacity: %d\n", q.capacity);
@@ -307,7 +295,6 @@ void GR0_testQueue() {
     printf("Queue capacity: %d\n", q.capacity);
 
 
-    // Test 4: Check if elements are in the queue
     printf("Test 4: verification que les éléments sont dans la file\n");
     value[0] = 5;
     value[1] = 10;
@@ -315,6 +302,7 @@ void GR0_testQueue() {
     value[0] = 100;
     value[1] = 200;
     printf("Is [%d, %d] in queue? %s\n", value[0], value[1], GR0_isinQueue(&q, value) ? "Yes" : "No");
+
 
     printf("Test 6: ajout après avoir enlevé \n");
     for (int i = 0; i < 6; i++) {
@@ -327,12 +315,11 @@ void GR0_testQueue() {
     printf("Queue capacity: %d\n", q.capacity);
 
 
-    // Test 5: Reset the queue
     printf("Test 5: Reset des files\n");
     GR0_resetQueue(&q);
     GR0_displayQueue(&q);
 
-    // Test 6: Enqueue after reset
+
     printf("Test 6: ajout après reset\n");
     for (int i = 0; i < 6; i++) {
         value[0] = i + 10;
@@ -343,12 +330,12 @@ void GR0_testQueue() {
     printf("Queue length: %d\n", q.length);
     printf("Queue capacity: %d\n", q.capacity);
 
-    // Test 7: Free the queue
+
     printf("Test 7: libérer les queue...\n");
     GR0_freeQueue(&q);
     printf("queue libérée avec succès.\n");
 
-    // Test 8: Initialize multiple queues
+
     printf("Test 8: initialisation de multiples queues\n");
     Queue queues[7];
     GR0_initQueues(queues);
@@ -357,15 +344,15 @@ void GR0_testQueue() {
         GR0_displayQueue(&queues[i]);
     }
 
-    // Test 9: Reset multiple queues
+
     printf("Test 9: reset des queues\n");
     GR0_resetQueues(queues);
     for (int i = 0; i < 7; i++) {
-        printf("Queue %d after reset:\n", i);
+        printf("Queue %d après reset:\n", i);
         GR0_displayQueue(&queues[i]);
     }
 
-    // Test 10: Free multiple queues
+    
     printf("Test 10: liberage de multiples queues\n");
     GR0_freeQueues(queues);
     printf("All queues freed successfully.\n");

@@ -3,23 +3,24 @@
 
 int GR0_random_bit_index(uint8_t n) {
     if (n == 0) return -1;
-
     int indices[8];
     int count = 0;
-
     for (int i = 0; i < 8; i++) {
         if (n & (1 << i)) {
             indices[count++] = i;
         }
     }
-
     return indices[rand() % count];
 }
 
-float GR0_clip(float value, float min, float max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
+inline int GR0_get_random_scalar(int min, int max){
+    if (min > max) return -1;
+    return min + rand() % (max - min + 1);
+}
+
+
+inline float GR0_clip(float value, float min, float max) {
+    return value>max ? max : (value<min ? min : value);
 }
 
 inline uint8_t GR0_condenser(Queue* moves){
@@ -44,10 +45,6 @@ void GR0_time_function(const char* function_name, void (*function_to_time)(void)
     printf("Execution time of %s: %.6f seconds\n", function_name, elapsed_time);
 }
 
-int GR0_get_random_scalar(int min, int max){
-    if (min > max) return -1;
-    return min + rand() % (max - min + 1);
-}
 
 inline float GR0_exp_approx(float x){
 	return(1/(1-x*(1-x/2)));

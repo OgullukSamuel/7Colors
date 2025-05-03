@@ -44,21 +44,26 @@ int GR0_in_rect(int x, int y, SDL_Rect rect);
 
 void GR0_update_cursor(GameState* etat,int current_player, int* cursor_position, int cursor_active);
 void GR0_handle_grid_click(int mouseX, int mouseY, Queue* moves, int* current_player, GameState* etat, int agent, int* winner, int* cursor_position, int cursor_active, func_ptr FUNC_ARRAY[NUM_AGENT], int* swap_sides,int* swapchoice,int* hint) ;
+
+void GR0_draw_rounded_rect(SDL_Renderer* renderer, SDL_Rect rect, SDL_Color color, int radius);
 void GR0_draw_button(SDL_Renderer* renderer, SDL_Rect rect, const char* label, SDL_Color color);
+void GR0_draw_cursor(SDL_Renderer* renderer, int position, int cursor_active, SDL_Color colors[COLOR_COUNT]);
 void GR0_draw_slider(SDL_Renderer* renderer, int value);
+
+void GR0_initialize_menu_textures(SDL_Renderer* renderer, TTF_Font* font);
+void GR0_draw_menu(SDL_Renderer* renderer, TTF_Font* font, int grid_size);
+void GR0_free_menu_textures();
 
 void GR0_draw_hovered_cell(SDL_Renderer* renderer, int mouseX, int mouseY, SDL_Color colors[COLOR_COUNT],GameState* etat, int player,int* position,Queue* hover_network,Queue shots_available[7], int* swap_sides,int* swapchoice);
 
-void GR0_draw_game_controls(SDL_Renderer* renderer, TTF_Font* font, int* cursor_active, int* winner,int* swapchoice,int* hint);
-void GR0_draw_menu(SDL_Renderer* renderer, TTF_Font* font, int grid_size);
-void GR0_draw_cursor(SDL_Renderer* renderer, int position, int cursor_active, SDL_Color colors[COLOR_COUNT]);
 void GR0_draw_turn_info(SDL_Renderer* renderer, TTF_Font* font, int player);
 void GR0_draw_grid(SDL_Renderer* renderer, TTF_Font* font, GameState* etat, SDL_Color colors[COLOR_COUNT], int* swap_sides,int* swapchoice);
-
-void GR0_draw_slider_knob(SDL_Renderer* renderer, int x, int y, int radius);
-
-
 void GR0_display_hint(SDL_Renderer* renderer,GameState* etat, int current_player,int* swapchoice,int* swap_sides);
+
+void GR0_draw_game_controls(SDL_Renderer* renderer, TTF_Font* font, int* cursor_active, int* winner,int* swapchoice,int* hint);
+
+
+void GR0_initialize_agent_textures(SDL_Renderer* renderer, TTF_Font* font);
 
 int GR0_visual_main();
 #endif

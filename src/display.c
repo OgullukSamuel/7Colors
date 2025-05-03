@@ -2,23 +2,23 @@
 #include "../head/display.h"
 const char* GR0_get_color_code(Color c) {
     switch(c) {
-        case ERROR: return "\033[31m";   // Red for ERROR
-        case EMPTY: return "\033[37m";   // White for EMPTY
-        case PLAYER_1: return "\033[34m"; // Blue for PLAYER_1
-        case PLAYER_2: return "\033[32m"; // Green for PLAYER_2
-        case RED: return "\033[31m";     // Red for RED
-        case GREEN: return "\033[32m";   // Green for GREEN
-        case BLUE: return "\033[34m";    // Blue for BLUE
-        case YELLOW: return "\033[33m";  // Yellow for YELLOW
-        case MAGENTA: return "\033[35m"; // Magenta for MAGENTA
-        case CYAN: return "\033[36m";    // Cyan for CYAN
-        case WHITE: return "\033[37m";   // White for WHITE
-        default: return "\033[0m";       // Default (reset color)
+        case ERROR: return "\033[31m";   // Rouge
+        case EMPTY: return "\033[37m";   // Blanc
+        case PLAYER_1: return "\033[34m"; // Bleu
+        case PLAYER_2: return "\033[32m"; // Vert
+        case RED: return "\033[31m";     // Rouge
+        case GREEN: return "\033[32m";   // Vert
+        case BLUE: return "\033[34m";    // Bleu
+        case YELLOW: return "\033[33m";  // Jaune
+        case MAGENTA: return "\033[35m"; // Magenta
+        case CYAN: return "\033[36m";    // Cyan
+        case WHITE: return "\033[37m";   // Blanc
+        default: return "\033[0m";       // noir
     }
 }
 
 void GR0_plot(GameState* state) {
-
+    // Fonction pour afficher l'état du jeu dans la console
     printf("┌");
     for (int j = 0; j < state->size; j++) {
         printf("───");
@@ -61,36 +61,24 @@ void GR0_plot(GameState* state) {
 
 const char* GR0_get_background_color_code(Color c) {
     switch(c) {
-        case ERROR: return "\033[48;5;1m";    // Red background for ERROR
-        case EMPTY: return "\033[48;5;15m";   // White background for EMPTY
-        case PLAYER_1: return "\033[48;5;4m"; // Blue background for PLAYER_1
-        case PLAYER_2: return "\033[48;5;2m"; // Green background for PLAYER_2
-        case RED: return "\033[48;5;9m";      // Bright Red background for RED
-        case GREEN: return "\033[48;5;10m";   // Bright Green background for GREEN
-        case BLUE: return "\033[48;5;12m";    // Bright Blue background for BLUE
-        case YELLOW: return "\033[48;5;11m";  // Yellow background for YELLOW
-        case MAGENTA: return "\033[48;5;13m"; // Magenta background for MAGENTA
-        case CYAN: return "\033[48;5;14m";    // Cyan background for CYAN
-        case WHITE: return "\033[48;5;7m";    // Gray background for WHITE
-        default: return "\033[48;5;15m";      // Default white background
+        case ERROR: return "\033[48;5;1m";    // rouge
+        case EMPTY: return "\033[48;5;15m";   // blanc
+        case PLAYER_1: return "\033[48;5;4m"; // Bleu
+        case PLAYER_2: return "\033[48;5;2m"; // Vert
+        case RED: return "\033[48;5;9m";      // Rouge clair
+        case GREEN: return "\033[48;5;10m";   // Vert clair
+        case BLUE: return "\033[48;5;12m";    // Bleu clair
+        case YELLOW: return "\033[48;5;11m";  // jaune
+        case MAGENTA: return "\033[48;5;13m"; // Magenta
+        case CYAN: return "\033[48;5;14m";    // Cyan
+        case WHITE: return "\033[48;5;7m";    // Gris
+        default: return "\033[48;5;15m";      // Default white
     }
 }
-/*
-int GR0_gameplay_question(){
-    printf("Selectionnez votre mode de jeu :\n");
-    printf("[1] Humain vs Humain\n");
-    printf("[2] Humain vs IA\n");
-    printf("[3] IA vs IA\n");
-    printf("[4] Quitter\n");
-    int choix;
-    scanf("%d", &choix);
-    return choix;
-}
-*/
-
 
 
 Color GR0_get_user_input(GameState* state,Color player){
+    // Fonction pour obtenir l'entrée de l'utilisateur
     Queue moves[7];
     GR0_initQueues(moves);
     uint8_t condenser=GR0_get_move_available(state, player, moves);
@@ -188,9 +176,9 @@ Color GR0_get_user_input(GameState* state,Color player){
 }
 
 void GR0_question_IA_IA(IAS* ia){
-
+    // Fonction pour choisir les agents IA
 	printf("Agent du joueur 1 : \n");
-    printf("[0] Humain   [1] Random   [2] Glouton   [3] Glouton Heuristique   [4] MinMax3   [5] MinMax6   [6] Frontière5   [7] Frontière5+heuristique   [6] Hegemonique   [9] Hégémonique Heuristique [A] ELO classement\n");    
+    printf("[0] Humain   [1] Random   [2] Glouton   [3] Glouton Heuristique   [4] MinMax3   [5] MinMax6   [6] Frontière5   [7] Frontière5+heuristique   [6] Mixte   [9] Hégémonique Heuristique [A] ELO classement   [B] classement général\n");    
     
     char ia1;
     int idx=0;
@@ -232,17 +220,25 @@ void GR0_question_IA_IA(IAS* ia){
             
             case '8' :
                 idx=1;
-                ia->decision1 = &GR0_hegemonique_heuristique;
+                ia->decision1 = &GR0_mixte;
                 break;
             
             case '9':
                 idx=1;
-                ia->decision1 = &GR0_hegemonique;
+                ia->decision1 = &GR0_hegemonique_heuristique;
                 break;
-            case 'a':
+            case'A':
+            case'a':
                 idx=1;
                 ia->decision1 = &GR0_IA_Random;
                 ia->elo=1;
+                return;
+                break;
+            case'B':
+            case'b':
+                idx=1;
+                ia->decision1 = &GR0_IA_Random;
+                ia->elo=2;
                 return;
                 break;
 
@@ -252,7 +248,7 @@ void GR0_question_IA_IA(IAS* ia){
         }
     }
     printf("Agent du joueur 2 : \n");
-    printf("[0] Humain   [1] Random   [2] Glouton   [3] Glouton Heuristique   [4] MinMax3   [5] MinMax6   [6] Frontière5   [7] Frontière5+heuristique   [8] Hegemonique   [9] Hégémonique Heuristique\n");    
+    printf("[0] Humain   [1] Random   [2] Glouton   [3] Glouton Heuristique   [4] MinMax3   [5] MinMax6   [6] Frontière5   [7] Frontière5+heuristique   [8] Mixte   [9] Hégémonique Heuristique\n");    
     idx=0;
     int ia2;
     while(idx==0){
@@ -294,7 +290,7 @@ void GR0_question_IA_IA(IAS* ia){
                 break;
             case 9:
                 idx=1;
-                ia->decision2 = &GR0_hegemonique;
+                ia->decision2 = &GR0_mixte;
                 break;
             case 8:
                 idx=1;
@@ -310,6 +306,4 @@ void GR0_question_IA_IA(IAS* ia){
 	scanf("%i", &(ia->affrontements));
 	printf("Souhaites-tu un affichage ? (1 pour oui, 0 pour non): ");
 	scanf("%i", &(ia->affichage));
-
-
 }

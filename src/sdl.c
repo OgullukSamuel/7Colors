@@ -1,41 +1,24 @@
 #include "../head/sdl.h"
 
-char* agent_names[NUM_AGENT] = {
-    "Aléatoire(elo:1100)",
-    "Glouton   (elo:1200)",
-    "Glouton   Heuristique (elo 1300)",
-    "Minmax3 (elo 1500)",
-    "Minmax6 (elo 1800)",
-    "Frontière5 ()",
-    "Frontière5+heuristique (elo 1700)",
-    "Hegemonique (elo 1500)",
-    "Hegemonique + Heuristique"
+char* GR0_agent_names[NUM_AGENT] = {
+    "Aléatoire      (elo:1100)",
+    "  Glouton      (elo:1450)",
+    "  Glouton      Heuristique    (elo 1500)",
+    "  Minmax3      (elo 1700)",
+    "  Minmax8      (elo 1900)",
+    "Frontière5     (1000)",
+    "Frontière5    Heuristique (elo 1800)",
+    "Hégémonique    (elo 1500)",
+    "Mixte          (elo 1550)"
 };
 
 
-// WIP
-/*
-si on veut changer de theme
-si on veut changer de police
-si on veut changer les joueurs et la rotation automatique
-si on veut afficher le territoire de chaque joueur
-optimiser l'affichage pour pas qu'il y ait de lag
-mettre des sons ?
-mettre des images ? 
-mettre des animations ?
-mode sombre ?
-affichage du bot si on joue contre un bot
-hints
-bouton de swap des cotés
-
-
-*/
 
 
 
-func_ptr FUNC_ARRAY[NUM_AGENT] = {&GR0_IA_Random, &GR0_Glouton,&GR0_Glouton_heuristique, &GR0_minmax3, &GR0_minmax6, &GR0_frontier_IA5, &GR0_frontier_IA5_heuristique,&GR0_hegemonique, &GR0_hegemonique_heuristique};
+func_ptr GR0_FUNC_ARRAY[NUM_AGENT] = {&GR0_IA_Random, &GR0_Glouton,&GR0_Glouton_heuristique, &GR0_minmax3, &GR0_minmax6, &GR0_frontier_IA5, &GR0_frontier_IA5_heuristique,&GR0_hegemonique, &GR0_hegemonique_heuristique};
 
-SDL_Color colors[COLOR_COUNT + 1] = {
+SDL_Color GR0_colors[COLOR_COUNT + 1] = {
     {0, 0, 0, 255},         // 0 - Ne sera pas utilisé (éviter le 0)
     {200, 165, 0, 255},     // 1 - Joueur 1 Orange
     {128, 0, 128, 255},          // 1 - Joueur 2 Violet
@@ -63,6 +46,7 @@ SDL_Texture* GR0_renderText(SDL_Renderer* renderer, TTF_Font* font, const char* 
 }
 
 void GR0_draw_text(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color, int x, int y) {
+    // Fonction pour dessiner du texte centré en x,y
     SDL_Texture* texture = GR0_renderText(renderer, font, text, color);
     if (!texture) return;
 
@@ -74,8 +58,7 @@ void GR0_draw_text(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL
 }
 
 int GR0_in_rect(int x, int y, SDL_Rect rect) {
-    return (x >= rect.x && x <= rect.x + rect.w &&
-            y >= rect.y && y <= rect.y + rect.h);
+    return (x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h);
 }
 
 void GR0_update_cursor(GameState* etat,int current_player, int* cursor_position, int cursor_active) {
@@ -91,13 +74,11 @@ void GR0_handle_grid_click(int mouseX, int mouseY, Queue* moves, int* current_pl
     int gy = (mouseX - GRID_OFFSET_X) / CELL_SIZE;
     int gx = (mouseY - GRID_OFFSET_Y) / CELL_SIZE;
 
-    // Apply 180-degree rotation if swap_sides is enabled
     if (*swapchoice&&*swap_sides) {
         gx = etat->size - 1 - gx;
         gy = etat->size - 1 - gy;
     }
 
-    printf("Mouse clicked at (%d, %d)\n", gx, gy);
     if (gx < 0 || gx >= etat->size || gy < 0 || gy >= etat->size) {
         return;
     }
@@ -110,7 +91,6 @@ void GR0_handle_grid_click(int mouseX, int mouseY, Queue* moves, int* current_pl
     for (int i = 0; i < 7; i++) {
         if (GR0_isinQueue(&moves[i], (int[2]){gx, gy})) {
             coup_dispo = i;
-            printf("Case (%d,%d) disponible pour le joueur, couleur %d %d\n", gx, gy, *current_player, i);
             break;
         }
     }
@@ -209,7 +189,7 @@ void GR0_draw_button(SDL_Renderer* renderer, SDL_Rect rect, const char* label, S
         rect.h += 10;
     }
 
-    GR0_draw_rounded_rect(renderer, rect, color, 10); // Use rounded corners with a radius of 10
+    GR0_draw_rounded_rect(renderer, rect, color, 10);
 
     if (labelTexture) {
         int texW, texH;
@@ -228,8 +208,8 @@ void GR0_draw_cursor(SDL_Renderer* renderer, int position, int cursor_active, SD
     float norm = (float)(position - cursor_min) / (cursor_max - cursor_min);
     int cursor_y = GRID_OFFSET_Y + (int)(norm * (WINDOW_HEIGHT - GRID_OFFSET_Y * 2));
 
-    int cursor_x = 30; // Décalage vers la gauche
-    int cursor_width = 20; // Largeur élargie
+    int cursor_x = 30;
+    int cursor_width = 20;
     SDL_Color c = colors[1];
 
     SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, 255); // Bleu
@@ -266,29 +246,112 @@ void GR0_draw_slider(SDL_Renderer* renderer, int value) {
     int knobX = SLIDER_X + (int)(norm * SLIDER_WIDTH);
 
     SDL_SetRenderDrawColor(renderer, 100, 100, 255, 255);
-    SDL_Rect knob = {knobX - SLIDER_KNOB_RADIUS, SLIDER_Y - SLIDER_KNOB_RADIUS + SLIDER_HEIGHT/2,
-                     SLIDER_KNOB_RADIUS * 2, SLIDER_KNOB_RADIUS * 2};
+    SDL_Rect knob = {knobX - SLIDER_KNOB_RADIUS, SLIDER_Y - SLIDER_KNOB_RADIUS + SLIDER_HEIGHT/2,SLIDER_KNOB_RADIUS * 2, SLIDER_KNOB_RADIUS * 2};
     SDL_RenderFillRect(renderer, &knob);
+}
+
+
+static SDL_Texture* startBtnTexture = NULL;
+static SDL_Texture* opponentBtnTexture = NULL;
+static SDL_Texture* quitBtnTexture = NULL;
+static SDL_Texture* menuBackgroundTexture = NULL;
+
+void GR0_initialize_menu_textures(SDL_Renderer* renderer, TTF_Font* font) {
+    if (!startBtnTexture) {
+        startBtnTexture = GR0_renderText(renderer, font, "Démarrer", (SDL_Color){0, 0, 0, 255});
+    }
+    if (!opponentBtnTexture) {
+        opponentBtnTexture = GR0_renderText(renderer, font, "Adversaire", (SDL_Color){0, 0, 0, 255});
+    }
+    if (!quitBtnTexture) {
+        quitBtnTexture = GR0_renderText(renderer, font, "Quitter", (SDL_Color){0, 0, 0, 255});
+    }
 }
 
 void GR0_draw_menu(SDL_Renderer* renderer, TTF_Font* font, int grid_size) {
     SDL_Rect startBtn = {300, 150, 200, 60};
     SDL_Rect opponentBtn = {300, 240, 200, 60};
-    SDL_Rect quitBtn  = {300, 330, 200, 60};
+    SDL_Rect quitBtn = {300, 330, 200, 60};
 
     int mx, my;
     SDL_GetMouseState(&mx, &my);
 
-    GR0_draw_button(renderer, startBtn, "Démarrer", (SDL_Color){0, 200, 0, 255});
-    GR0_draw_button(renderer, opponentBtn, "Adversaire", (SDL_Color){0, 0, 200, 255});
-    GR0_draw_button(renderer, quitBtn, "Quitter", (SDL_Color){200, 0, 0, 255});
-    
-    TTF_SetFontSize(font, 24); 
+
+    int is_hovered = GR0_in_rect(mx, my, startBtn);
+    SDL_Rect startBtnHover = startBtn;
+    if (is_hovered) {
+        startBtnHover.x -= 5;
+        startBtnHover.y -= 5;
+        startBtnHover.w += 10;
+        startBtnHover.h += 10;
+    }
+    GR0_draw_rounded_rect(renderer, startBtnHover, (SDL_Color){0, 200, 0, 255}, 10);
+    if (startBtnTexture) {
+        int texW, texH;
+        SDL_QueryTexture(startBtnTexture, NULL, NULL, &texW, &texH);
+        SDL_Rect dst = {startBtnHover.x + startBtnHover.w / 2 - texW / 2, startBtnHover.y + startBtnHover.h / 2 - texH / 2, texW, texH};
+        SDL_RenderCopy(renderer, startBtnTexture, NULL, &dst);
+    }
+
+
+    is_hovered = GR0_in_rect(mx, my, opponentBtn);
+    SDL_Rect opponentBtnHover = opponentBtn;
+    if (is_hovered) {
+        opponentBtnHover.x -= 5;
+        opponentBtnHover.y -= 5;
+        opponentBtnHover.w += 10;
+        opponentBtnHover.h += 10;
+    }
+    GR0_draw_rounded_rect(renderer, opponentBtnHover, (SDL_Color){0, 0, 200, 255}, 10);
+    if (opponentBtnTexture) {
+        int texW, texH;
+        SDL_QueryTexture(opponentBtnTexture, NULL, NULL, &texW, &texH);
+        SDL_Rect dst = {opponentBtnHover.x + opponentBtnHover.w / 2 - texW / 2, opponentBtnHover.y + opponentBtnHover.h / 2 - texH / 2, texW, texH};
+        SDL_RenderCopy(renderer, opponentBtnTexture, NULL, &dst);
+    }
+
+
+    is_hovered = GR0_in_rect(mx, my, quitBtn);
+    SDL_Rect quitBtnHover = quitBtn;
+    if (is_hovered) {
+        quitBtnHover.x -= 5;
+        quitBtnHover.y -= 5;
+        quitBtnHover.w += 10;
+        quitBtnHover.h += 10;
+    }
+    GR0_draw_rounded_rect(renderer, quitBtnHover, (SDL_Color){200, 0, 0, 255}, 10);
+    if (quitBtnTexture) {
+        int texW, texH;
+        SDL_QueryTexture(quitBtnTexture, NULL, NULL, &texW, &texH);
+        SDL_Rect dst = {quitBtnHover.x + quitBtnHover.w / 2 - texW / 2, quitBtnHover.y + quitBtnHover.h / 2 - texH / 2, texW, texH};
+        SDL_RenderCopy(renderer, quitBtnTexture, NULL, &dst);
+    }
+
+    TTF_SetFontSize(font, 24);
     GR0_draw_text(renderer, font, "Taille de la grille :", (SDL_Color){255, 255, 255, 255}, WINDOW_WIDTH / 2, SLIDER_Y - 30);
     GR0_draw_slider(renderer, grid_size);
     char gridSizeText[20];
     snprintf(gridSizeText, sizeof(gridSizeText), "%d x %d", grid_size, grid_size);
     GR0_draw_text(renderer, font, gridSizeText, (SDL_Color){255, 255, 255, 255}, WINDOW_WIDTH / 2, SLIDER_Y + 50);
+}
+
+void GR0_free_menu_textures() {
+    if (startBtnTexture) {
+        SDL_DestroyTexture(startBtnTexture);
+        startBtnTexture = NULL;
+    }
+    if (opponentBtnTexture) {
+        SDL_DestroyTexture(opponentBtnTexture);
+        opponentBtnTexture = NULL;
+    }
+    if (quitBtnTexture) {
+        SDL_DestroyTexture(quitBtnTexture);
+        quitBtnTexture = NULL;
+    }
+    if (menuBackgroundTexture) {
+        SDL_DestroyTexture(menuBackgroundTexture);
+        menuBackgroundTexture = NULL;
+    }
 }
 
 void GR0_draw_hovered_cell(SDL_Renderer* renderer, int mouseX, int mouseY, SDL_Color colors[COLOR_COUNT], GameState* etat, int player, int* position, Queue* hover_network, Queue shots_available[7], int* swap_sides,int* swapchoice) {
@@ -311,21 +374,20 @@ void GR0_draw_hovered_cell(SDL_Renderer* renderer, int mouseX, int mouseY, SDL_C
         position[0] = gx;
         position[1] = gy;
     }
-
-    Queue* hovernet = GR0_copyQueue(hover_network);
+    Queue hovernet;
+    GR0_copyQueue(hover_network,&hovernet);
     SDL_Color c = colors[get_map_value(etat, gx, gy)];
     int length = hover_network->length;
 
     int positions[length][2];
     for (int i = 0; i < length; i++) {
-        GR0_dequeue(hovernet, positions[i]);
+        GR0_dequeue(&hovernet, positions[i]);
     }
 
     for (int i = 0; i < length; i++) {
         int draw_x = positions[i][1];
         int draw_y = positions[i][0];
 
-        // Apply 180-degree rotation to hovered cells if swap_sides is enabled
         if (*swapchoice &&*swap_sides) {
             draw_x = etat->size - 1 - positions[i][1];
             draw_y = etat->size - 1 - positions[i][0];
@@ -358,7 +420,7 @@ void GR0_draw_turn_info(SDL_Renderer* renderer, TTF_Font* font, int player) {
     if (turnTextTexture) {
         int texW, texH;
         SDL_QueryTexture(turnTextTexture, NULL, NULL, &texW, &texH);
-        SDL_Rect dst = {WINDOW_WIDTH / 2 - texW / 2, GRID_OFFSET_Y - 20 - texH / 2, texW, texH};
+        SDL_Rect dst = {((WINDOW_WIDTH+ GRID_OFFSET_X/2 )/ 2) - texW / 2, GRID_OFFSET_Y - 20 - texH / 2, texW, texH};
         SDL_RenderCopy(renderer, turnTextTexture, NULL, &dst);
     }
 }
@@ -421,8 +483,8 @@ void GR0_display_hint(SDL_Renderer* renderer, GameState* etat, int current_playe
 
     GR0_freeQueues(moves);
 
-    SDL_Color c = colors[current_player];
-    SDL_Color c2 = colors[get_map_value(etat, positions[0][0], positions[0][1])];
+    SDL_Color c = GR0_colors[current_player];
+    SDL_Color c2 = GR0_colors[get_map_value(etat, positions[0][0], positions[0][1])];
     for (int i = 0; i < length; i++) {
         int draw_x = positions[i][1];
         int draw_y = positions[i][0];
@@ -492,6 +554,65 @@ void GR0_draw_game_controls(SDL_Renderer* renderer, TTF_Font* font, int* cursor_
     }
 }
 
+// Add a static array to cache textures for agent names
+static SDL_Texture* agent_name_textures[8] = {NULL};
+
+// Update the function to handle multi-line text rendering with a new font
+void GR0_initialize_agent_textures(SDL_Renderer* renderer, TTF_Font* font) {
+    TTF_Font* name_font = TTF_OpenFont("verdana.ttf", 20); // Use a different font for adversary names
+    if (!name_font) {
+        SDL_Log("Erreur chargement police (verdana.ttf) : %s", TTF_GetError());
+        name_font = font; // Fallback to the global font if loading fails
+    }
+
+    for (int i = 0; i < 8; ++i) {
+        if (agent_name_textures[i]) SDL_DestroyTexture(agent_name_textures[i]);
+
+        // Split the agent name into multiple lines
+        char line1[20] = {0}, line2[20] = {0}, line3[20] = {0};
+        snprintf(line1, sizeof(line1), "%.15s", GR0_agent_names[i]); // First 15 characters
+        if (strlen(GR0_agent_names[i]) > 15) {
+            snprintf(line2, sizeof(line2), "%.15s", GR0_agent_names[i] + 15); // Next 15 characters
+        }
+        if (strlen(GR0_agent_names[i]) > 30) {
+            snprintf(line3, sizeof(line3), "%.15s", GR0_agent_names[i] + 30); // Remaining characters
+        }
+
+        // Create a surface for each line and combine them into a single texture
+        SDL_Surface* surface1 = TTF_RenderUTF8_Blended(name_font, line1, (SDL_Color){255, 255, 255, 255});
+        SDL_Surface* surface2 = line2[0] ? TTF_RenderUTF8_Blended(name_font, line2, (SDL_Color){255, 255, 255, 255}) : NULL;
+        SDL_Surface* surface3 = line3[0] ? TTF_RenderUTF8_Blended(name_font, line3, (SDL_Color){255, 255, 255, 255}) : NULL;
+
+        int totalHeight = surface1->h + (surface2 ? surface2->h : 0) + (surface3 ? surface3->h : 0);
+        int maxWidth = surface1->w;
+        if (surface2 && surface2->w > maxWidth) maxWidth = surface2->w;
+        if (surface3 && surface3->w > maxWidth) maxWidth = surface3->w;
+
+        SDL_Surface* combinedSurface = SDL_CreateRGBSurface(0, maxWidth, totalHeight, 32, 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000);
+        SDL_Rect dest = {0, 0, 0, 0};
+        SDL_BlitSurface(surface1, NULL, combinedSurface, &dest);
+        if (surface2) {
+            dest.y += surface1->h;
+            SDL_BlitSurface(surface2, NULL, combinedSurface, &dest);
+        }
+        if (surface3) {
+            dest.y += surface2->h;
+            SDL_BlitSurface(surface3, NULL, combinedSurface, &dest);
+        }
+
+        agent_name_textures[i] = SDL_CreateTextureFromSurface(renderer, combinedSurface);
+
+        SDL_FreeSurface(surface1);
+        if (surface2) SDL_FreeSurface(surface2);
+        if (surface3) SDL_FreeSurface(surface3);
+        SDL_FreeSurface(combinedSurface);
+    }
+
+    if (name_font != font) {
+        TTF_CloseFont(name_font); // Close the custom font if it was loaded
+    }
+}
+
 int GR0_visual_main() {
     int current_player = 1;
     int winner = 0;
@@ -539,6 +660,7 @@ int GR0_visual_main() {
     GR0_initQueues(moves);
     GR0_get_move_available(&etat,current_player,moves);
     int mx, my; // Declare mx and my at the beginning of the function
+    GR0_initialize_menu_textures(renderer, global_font);
     while (running) {
         SDL_GetMouseState(&mx, &my); // Update mx and my at the start of each frame
 
@@ -580,34 +702,33 @@ int GR0_visual_main() {
                 } else if (state == SELECT_OPPONENT) {
                     for (int i = 0; i < 8; ++i) {
                         SDL_Rect btn = {
-                            100 + (i % 3) * 250, // Position horizontale (3 boutons par ligne)
-                            100 + (i / 3) * 120, // Position verticale (3 lignes max)
-                            200, // Largeur
-                            80   // Hauteur
+                            100 + (i % 3) * 250, 
+                            100 + (i / 3) * 140,
+                            200,
+                            100   
                         };
                         if (GR0_in_rect(x, y, btn)) {
-                            printf("Agent : %s\n", agent_names[i]);
+                            printf("Agent : %s\n", GR0_agent_names[i]);
                             agent = i;
                             state = MENU;
                         }
                         GR0_draw_button(renderer, btn, "", (SDL_Color){0, 200, 200, 255});
-                        // Afficher le nom de l'agent sur trois lignes
                         char line1[20] = {0}, line2[20] = {0}, line3[20] = {0};
-                        snprintf(line1, sizeof(line1), "%.10s", agent_names[i]); // Première ligne (10 caractères max)
-                        if (strlen(agent_names[i]) > 10) {
-                            snprintf(line2, sizeof(line2), "%.10s", agent_names[i] + 10); // Deuxième ligne (10 caractères suivants)
+                        snprintf(line1, sizeof(line1), "%.10s", GR0_agent_names[i]);
+                        if (strlen(GR0_agent_names[i]) > 10) {
+                            snprintf(line2, sizeof(line2), "%.10s", GR0_agent_names[i] + 10);
                         }
-                        if (strlen(agent_names[i]) > 20) {
-                            snprintf(line3, sizeof(line3), "%.10s", agent_names[i] + 20); // Troisième ligne (reste du nom)
+                        if (strlen(GR0_agent_names[i]) > 20) {
+                            snprintf(line3, sizeof(line3), "%.10s", GR0_agent_names[i] + 20);
                         }
 
                         GR0_draw_text(renderer, global_font, line1, (SDL_Color){255, 255, 255, 255},
-                                  btn.x + btn.w / 2, btn.y + btn.h / 4); // Ligne 1
-                        if (strlen(line2) > 0) { // Afficher la deuxième ligne uniquement si elle n'est pas vide
+                                  btn.x + btn.w / 2, btn.y + btn.h / 4);
+                        if (strlen(line2) > 0) {
                             GR0_draw_text(renderer, global_font, line2, (SDL_Color){255, 255, 255, 255},
                                       btn.x + btn.w / 2, btn.y + btn.h / 2); // Ligne 2
                         }
-                        if (strlen(line3) > 0) { // Afficher la troisième ligne uniquement si elle n'est pas vide
+                        if (strlen(line3) > 0) {
                             GR0_draw_text(renderer, global_font, line3, (SDL_Color){255, 255, 255, 255},
                                       btn.x + btn.w / 2, btn.y + 3 * btn.h / 4); // Ligne 3
                         }
@@ -663,12 +784,12 @@ int GR0_visual_main() {
                     }
                     if (x >= GRID_OFFSET_X && x < GRID_OFFSET_X + etat.size * CELL_SIZE &&
                         y >= GRID_OFFSET_Y && y < GRID_OFFSET_Y + etat.size * CELL_SIZE){
-                        GR0_handle_grid_click(x, y, moves, &current_player, &etat, agent, &winner, &cursor_position, cursor_active, FUNC_ARRAY, &swap_sides,&swapchoice,&hint);
+                        GR0_handle_grid_click(x, y, moves, &current_player, &etat, agent, &winner, &cursor_position, cursor_active, GR0_FUNC_ARRAY, &swap_sides,&swapchoice,&hint);
                     }
                 }
             }
         }
-        SDL_SetRenderDrawColor(renderer, 80, 45, 20, 255);
+        SDL_SetRenderDrawColor(renderer, 59, 57, 74, 255);
         SDL_RenderClear(renderer);
 
         if (state == MENU) {
@@ -676,46 +797,36 @@ int GR0_visual_main() {
         } else if (state == GAME) {
 
             GR0_draw_turn_info(renderer, global_font, current_player);
-            GR0_draw_grid(renderer, global_font, &etat, colors, &swap_sides,&swapchoice);
+            GR0_draw_grid(renderer, global_font, &etat, GR0_colors, &swap_sides,&swapchoice);
             
             if(hint){
                 GR0_display_hint(renderer,&etat,current_player,&swap_sides,&swapchoice);
             }
             
-            GR0_draw_hovered_cell(renderer, mx, my, colors, &etat,current_player, position, &hovernet,moves, &swap_sides,&swapchoice);
+            GR0_draw_hovered_cell(renderer, mx, my, GR0_colors, &etat,current_player, position, &hovernet,moves, &swap_sides,&swapchoice);
             
-            GR0_draw_cursor(renderer, cursor_position, cursor_active, colors);
+            GR0_draw_cursor(renderer, cursor_position, cursor_active, GR0_colors);
             GR0_draw_game_controls(renderer, global_font, &cursor_active, &winner, &swapchoice,&hint);
 
         } else if (state == SELECT_OPPONENT) {
+            if (!agent_name_textures[0]) {
+                GR0_initialize_agent_textures(renderer, global_font);
+            }
+
             for (int i = 0; i < 8; ++i) {
                 SDL_Rect btn = {
                     100 + (i % 3) * 250, // Position horizontale (3 boutons par ligne)
-                    100 + (i / 3) * 120, // Position verticale (3 lignes max)
+                    100 + (i / 3) * 140, // Position verticale (adjusted spacing)
                     200, // Largeur
-                    80   // Hauteur
+                    100   // Hauteur (increased height)
                 };
                 GR0_draw_button(renderer, btn, "", (SDL_Color){0, 200, 200, 255});
 
-                // Afficher le nom de l'agent sur trois lignes
-                char line1[20] = {0}, line2[20] = {0}, line3[20] = {0};
-                snprintf(line1, sizeof(line1), "%.10s", agent_names[i]); // Première ligne (10 caractères max)
-                if (strlen(agent_names[i]) > 10) {
-                    snprintf(line2, sizeof(line2), "%.10s", agent_names[i] + 10); // Deuxième ligne (10 caractères suivants)
-                }
-                if (strlen(agent_names[i]) > 20) {
-                    snprintf(line3, sizeof(line3), "%.10s", agent_names[i] + 20); // Troisième ligne (reste du nom)
-                }
-
-                GR0_draw_text(renderer, global_font, line1, (SDL_Color){255, 255, 255, 255},
-                          btn.x + btn.w / 2, btn.y + btn.h / 4); // Ligne 1
-                if (strlen(line2) > 0) { // Afficher la deuxième ligne uniquement si elle n'est pas vide
-                    GR0_draw_text(renderer, global_font, line2, (SDL_Color){255, 255, 255, 255},
-                              btn.x + btn.w / 2, btn.y + btn.h / 2); // Ligne 2
-                }
-                if (strlen(line3) > 0) { // Afficher la troisième ligne uniquement si elle n'est pas vide
-                    GR0_draw_text(renderer, global_font, line3, (SDL_Color){255, 255, 255, 255},
-                              btn.x + btn.w / 2, btn.y + 3 * btn.h / 4); // Ligne 3
+                if (agent_name_textures[i]) {
+                    int texW, texH;
+                    SDL_QueryTexture(agent_name_textures[i], NULL, NULL, &texW, &texH);
+                    SDL_Rect dst = {btn.x + btn.w / 2 - texW / 2, btn.y + btn.h / 2 - texH / 2, texW, texH};
+                    SDL_RenderCopy(renderer, agent_name_textures[i], NULL, &dst);
                 }
             }
         }
@@ -734,5 +845,16 @@ int GR0_visual_main() {
     GR0_freeQueue(&hovernet);
     GR0_freeQueues(moves);
     GR0_free_state(&etat);
+
+    // Free textures when exiting the program
+    for (int i = 0; i < 8; ++i) {
+        if (agent_name_textures[i]) {
+            SDL_DestroyTexture(agent_name_textures[i]);
+            agent_name_textures[i] = NULL;
+        }
+    }
+
+    GR0_free_menu_textures();
+
     return 0;
 }

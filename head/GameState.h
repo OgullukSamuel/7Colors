@@ -28,13 +28,7 @@ typedef struct GameState{
 	int size;
 } GameState;
 
-typedef struct IAS{
-	int elo;
-	int affrontements;
-	int affichage;
-	Color (*decision1)(GameState*,Color);
-	Color (*decision2)(GameState*,Color);
-} IAS;
+
 
 typedef Color (*func_ptr)(GameState*,Color); 
 
@@ -46,6 +40,7 @@ Color get_map_value (GameState* state, int x, int y);
 
 void fill_map(GameState* state);
 
+void GR0_free_state(GameState* state);
 
 void GR0_initialize(GameState* etat, int grid_size);
 

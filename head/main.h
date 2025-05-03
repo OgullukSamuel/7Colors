@@ -3,7 +3,6 @@
 
 #include "../head/console.h"
 #include "../head/sdl.h"
-
 #include "../head/GameState.h"
 
 #include <stdio.h>
