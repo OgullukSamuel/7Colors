@@ -292,6 +292,13 @@ float GR0_heuristique_frontier_upgraded(GameState* state){
 }
 
 
+Color GR0_frontier_IA8_heuristique(GameState* state, Color player){
+	int best_move;
+	GR0_alpha_beta_minmax(state, 8, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&GR0_heuristique_frontier_upgraded);  
+	Color move = best_move;
+	return move;
+}
+
 Color GR0_frontier_IA5_heuristique(GameState* state, Color player){
 	int best_move;
 	GR0_alpha_beta_minmax(state, 5, -10 * (state->size) * (state->size), 10 * (state->size) * (state->size), player, &best_move,&GR0_heuristique_frontier_upgraded);  

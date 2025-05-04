@@ -35,6 +35,7 @@ float GR0_heuristique_frontier_upgraded(GameState* state);
 Color GR0_frontier_IA5(GameState* state, Color player);
 Color GR0_frontier_IA5_heuristique(GameState* state, Color player);
 
+Color GR0_frontier_IA8_heuristique(GameState* state, Color player);
 
 void GR0_time_function(const char* function_name, void (*function_to_time)(void));
 

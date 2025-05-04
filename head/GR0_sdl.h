@@ -35,7 +35,7 @@ typedef struct {
 #define COLOR_COUNT 9
 #define PLAYER1_COLOR 1
 #define PLAYER2_COLOR 2
-#define NUM_AGENT 9
+#define NUM_AGENTS 9
 
 
 SDL_Texture* GR0_renderText(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL_Color color);
@@ -43,7 +43,7 @@ void GR0_draw_text(SDL_Renderer* renderer, TTF_Font* font, const char* text, SDL
 int GR0_in_rect(int x, int y, SDL_Rect rect);
 
 void GR0_update_cursor(GameState* etat,int current_player, int* cursor_position, int cursor_active);
-void GR0_handle_grid_click(int mouseX, int mouseY, Queue* moves, int* current_player, GameState* etat, int agent, int* winner, int* cursor_position, int cursor_active, func_ptr FUNC_ARRAY[NUM_AGENT], int* swap_sides,int* swapchoice,int* hint) ;
+void GR0_handle_grid_click(int mouseX, int mouseY, Queue* moves, int* current_player, GameState* etat, int agent, int* winner, int* cursor_position, int cursor_active, func_ptr FUNC_ARRAY[NUM_AGENTS], int* swap_sides,int* swapchoice,int* hint) ;
 
 void GR0_draw_rounded_rect(SDL_Renderer* renderer, SDL_Rect rect, SDL_Color color, int radius);
 void GR0_draw_button(SDL_Renderer* renderer, SDL_Rect rect, const char* label, SDL_Color color);

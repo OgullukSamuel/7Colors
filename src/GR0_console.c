@@ -2,7 +2,7 @@
 
 int Size;
 
-void save_float_array_to_file(float array[NOMBRE_SIZE][NUM_AGENT], const char* filename) {
+void GR0_save_float_array_to_file(float array[NOMBRE_SIZE][NUM_AGENT], const char* filename) {
     FILE* file = fopen(filename, "w");
     if (!file) {
         perror("Erreur d'ouverture du fichier");
@@ -82,21 +82,18 @@ void GR0_general_ranking(){
         sizes[i]=i+3;
     }
     float agents[NOMBRE_SIZE][NUM_AGENT]={0};
-    float agent_tempo[3][NUM_AGENT]={0};
+    float agent_tempo[NOMBRE_AVG][NUM_AGENT]={0};
     clock_t start_time = clock();
-    
-
-
 
     for (int i=0;i<NOMBRE_SIZE;i++){
         Size = sizes[i];
         printf("======================\nTaille de la carte : %d\n", Size);
-        for(int j=0;j<3;j++){
+        for(int j=0;j<NOMBRE_AVG;j++){
             
             printf("----------------------itération %d\n", j+1);
             GR0_elo_ranking(2,agent_tempo[j]);
             for (int k=0;k<NUM_AGENT;k++){
-                agents[i][k]+=agent_tempo[j][k]/3;
+                agents[i][k]+=agent_tempo[j][k]/NOMBRE_AVG;
             }
         }
     }
@@ -108,7 +105,7 @@ void GR0_general_ranking(){
         }
         printf("\n");
     }
-    save_float_array_to_file(agents, "elo_ranking.csv");
+    GR0_save_float_array_to_file(agents, "GR0_elo_ranking.csv");
     clock_t end_time = clock();
     double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
     printf("temps d'execution de l'elo : %.6f seconds\n", elapsed_time);
@@ -128,6 +125,7 @@ void GR0_elo_ranking(int choix,float* agents) {
         func_array[6] = &GR0_minmax6;
         func_array[7] = &GR0_minmax7;
         func_array[8] = &GR0_minmax8;
+        func_array[9] = &GR0_minmax8;
 
     } else if(choix == 2) {
         func_array[0] = &GR0_IA_Random;
@@ -137,8 +135,9 @@ void GR0_elo_ranking(int choix,float* agents) {
         func_array[4] = &GR0_minmax8;
         func_array[5] = &GR0_frontier_IA5;
         func_array[6] = &GR0_frontier_IA5_heuristique;
-        func_array[7] = &GR0_hegemonique;
-        func_array[8] = &GR0_mixte;
+        func_array[7] = &GR0_frontier_IA8_heuristique;
+        func_array[8] = &GR0_hegemonique;
+        func_array[9] = &GR0_mixte;
     } else {
         //il faut mettre ici des foncteurs vers les autres agents que l'on souhaite tester
         func_array[0] = &GR0_IA_Random;
@@ -150,6 +149,7 @@ void GR0_elo_ranking(int choix,float* agents) {
         func_array[6] = &GR0_frontier_IA5_heuristique;
         func_array[7] = &GR0_hegemonique;
         func_array[8] = &GR0_mixte;
+        func_array[9] = &GR0_minmax8;
     }
 
 

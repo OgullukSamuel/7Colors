@@ -1,6 +1,6 @@
 #include "../head/GR0_sdl.h"
 
-char* GR0_agent_names[NUM_AGENT] = {
+char* GR0_agent_names[NUM_AGENTS] = {
     "Aléatoire      (elo:1100)",
     "  Glouton      (elo:1450)",
     "  Glouton      Heuristique    (elo 1500)",
@@ -16,7 +16,7 @@ char* GR0_agent_names[NUM_AGENT] = {
 
 
 
-func_ptr GR0_FUNC_ARRAY[NUM_AGENT] = {&GR0_IA_Random, &GR0_Glouton,&GR0_Glouton_heuristique, &GR0_minmax3, &GR0_minmax6, &GR0_frontier_IA5, &GR0_frontier_IA5_heuristique,&GR0_hegemonique, &GR0_hegemonique_heuristique};
+func_ptr GR0_FUNC_ARRAY[NUM_AGENTS] = {&GR0_IA_Random, &GR0_Glouton,&GR0_Glouton_heuristique, &GR0_minmax3, &GR0_minmax6, &GR0_frontier_IA5, &GR0_frontier_IA5_heuristique,&GR0_hegemonique, &GR0_hegemonique_heuristique};
 
 SDL_Color GR0_colors[COLOR_COUNT + 1] = {
     {0, 0, 0, 255},         // 0 - Ne sera pas utilisé (éviter le 0)
@@ -70,7 +70,7 @@ void GR0_update_cursor(GameState* etat,int current_player, int* cursor_position,
     }
 }
 
-void GR0_handle_grid_click(int mouseX, int mouseY, Queue* moves, int* current_player, GameState* etat, int agent, int* winner, int* cursor_position, int cursor_active, func_ptr FUNC_ARRAY[NUM_AGENT], int* swap_sides,int* swapchoice,int* hint) {
+void GR0_handle_grid_click(int mouseX, int mouseY, Queue* moves, int* current_player, GameState* etat, int agent, int* winner, int* cursor_position, int cursor_active, func_ptr FUNC_ARRAY[NUM_AGENTS], int* swap_sides,int* swapchoice,int* hint) {
     int gy = (mouseX - GRID_OFFSET_X) / CELL_SIZE;
     int gx = (mouseY - GRID_OFFSET_Y) / CELL_SIZE;
 
