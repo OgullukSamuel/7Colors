@@ -357,7 +357,6 @@ void GR0_draw_hovered_cell(SDL_Renderer* renderer, int mouseX, int mouseY, SDL_C
     int gy = (mouseX - GRID_OFFSET_X) / CELL_SIZE;
     int gx = (mouseY - GRID_OFFSET_Y) / CELL_SIZE;
 
-    // Apply 180-degree rotation if swap_sides is enabled
     if (*swapchoice && *swap_sides) {
         gx = etat->size - 1 - gx;
         gy = etat->size - 1 - gy;
@@ -506,16 +505,13 @@ void GR0_display_hint(SDL_Renderer* renderer, GameState* etat, int current_playe
             CELL_SIZE - 3
         };
 
-        // Draw the outer rectangle (halo)
-        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, 100); // Semi-transparent color
+        SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, 100);
         SDL_RenderFillRect(renderer, &outerRect);
 
-        // Clear the inner rectangle to create the border effect
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // Transparent (background color)
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); 
         SDL_RenderFillRect(renderer, &innerRect);
 
-        // Draw the actual square
-        SDL_SetRenderDrawColor(renderer, c2.r, c2.g, c2.b, 255); // Solid color
+        SDL_SetRenderDrawColor(renderer, c2.r, c2.g, c2.b, 255);
         SDL_RenderFillRect(renderer, &innerRect);
     }
 
@@ -527,10 +523,10 @@ void GR0_draw_game_controls(SDL_Renderer* renderer, TTF_Font* font, int* cursor_
     int button_offset_x = GRID_OFFSET_X - 180;
 
     SDL_Rect cursorToggleBtn = {button_offset_x, GRID_OFFSET_Y, 150, 50};
-    SDL_Rect backToMenuBtn = {button_offset_x, GRID_OFFSET_Y + 70, 150, 50}; // Adjusted spacing
-    SDL_Rect hintBtn = {button_offset_x, GRID_OFFSET_Y + 140, 150, 50}; // Adjusted spacing
-    SDL_Rect swapSidesBtn = {button_offset_x, GRID_OFFSET_Y + 210, 150, 50}; // Adjusted spacing
-    SDL_Rect resignBtn = {button_offset_x, WINDOW_HEIGHT - GRID_OFFSET_Y - 50, 150, 50}; // Bottom-left
+    SDL_Rect backToMenuBtn = {button_offset_x, GRID_OFFSET_Y + 70, 150, 50}; 
+    SDL_Rect hintBtn = {button_offset_x, GRID_OFFSET_Y + 140, 150, 50}; 
+    SDL_Rect swapSidesBtn = {button_offset_x, GRID_OFFSET_Y + 210, 150, 50}; 
+    SDL_Rect resignBtn = {button_offset_x, WINDOW_HEIGHT - GRID_OFFSET_Y - 50, 150, 50};
 
     GR0_draw_button(renderer, cursorToggleBtn, "Évaluation",
                     *cursor_active ? (SDL_Color){0, 200, 0, 255} : (SDL_Color){200, 0, 0, 255});
@@ -553,31 +549,28 @@ void GR0_draw_game_controls(SDL_Renderer* renderer, TTF_Font* font, int* cursor_
     }
 }
 
-// Add a static array to cache textures for agent names
+
 static SDL_Texture* agent_name_textures[8] = {NULL};
 
-// Update the function to handle multi-line text rendering with a new font
 void GR0_initialize_agent_textures(SDL_Renderer* renderer, TTF_Font* font) {
-    TTF_Font* name_font = TTF_OpenFont("verdana.ttf", 20); // Use a different font for adversary names
+    TTF_Font* name_font = TTF_OpenFont("verdana.ttf", 20); 
     if (!name_font) {
         SDL_Log("Erreur chargement police (verdana.ttf) : %s", TTF_GetError());
-        name_font = font; // Fallback to the global font if loading fails
+        name_font = font;
     }
 
     for (int i = 0; i < 8; ++i) {
         if (agent_name_textures[i]) SDL_DestroyTexture(agent_name_textures[i]);
 
-        // Split the agent name into multiple lines
         char line1[20] = {0}, line2[20] = {0}, line3[20] = {0};
-        snprintf(line1, sizeof(line1), "%.15s", GR0_agent_names[i]); // First 15 characters
+        snprintf(line1, sizeof(line1), "%.15s", GR0_agent_names[i]);
         if (strlen(GR0_agent_names[i]) > 15) {
-            snprintf(line2, sizeof(line2), "%.15s", GR0_agent_names[i] + 15); // Next 15 characters
+            snprintf(line2, sizeof(line2), "%.15s", GR0_agent_names[i] + 15); 
         }
         if (strlen(GR0_agent_names[i]) > 30) {
-            snprintf(line3, sizeof(line3), "%.15s", GR0_agent_names[i] + 30); // Remaining characters
+            snprintf(line3, sizeof(line3), "%.15s", GR0_agent_names[i] + 30); 
         }
 
-        // Create a surface for each line and combine them into a single texture
         SDL_Surface* surface1 = TTF_RenderUTF8_Blended(name_font, line1, (SDL_Color){255, 255, 255, 255});
         SDL_Surface* surface2 = line2[0] ? TTF_RenderUTF8_Blended(name_font, line2, (SDL_Color){255, 255, 255, 255}) : NULL;
         SDL_Surface* surface3 = line3[0] ? TTF_RenderUTF8_Blended(name_font, line3, (SDL_Color){255, 255, 255, 255}) : NULL;
@@ -608,7 +601,7 @@ void GR0_initialize_agent_textures(SDL_Renderer* renderer, TTF_Font* font) {
     }
 
     if (name_font != font) {
-        TTF_CloseFont(name_font); // Close the custom font if it was loaded
+        TTF_CloseFont(name_font);
     }
 }
 
@@ -643,7 +636,7 @@ int GR0_visual_main() {
         return 1;
     }
     
-    global_font = TTF_OpenFont("arial.ttf", 24); // Load the font once
+    global_font = TTF_OpenFont("arial.ttf", 24); 
     if (!global_font) {
         SDL_Log("Erreur chargement police : %s", TTF_GetError());
         SDL_DestroyRenderer(renderer);
@@ -658,10 +651,10 @@ int GR0_visual_main() {
     Queue moves[7];
     GR0_initQueues(moves);
     GR0_get_move_available(&etat,current_player,moves);
-    int mx, my; // Declare mx and my at the beginning of the function
+    int mx, my;
     GR0_initialize_menu_textures(renderer, global_font);
     while (running) {
-        SDL_GetMouseState(&mx, &my); // Update mx and my at the start of each frame
+        SDL_GetMouseState(&mx, &my);
 
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT)
@@ -734,10 +727,10 @@ int GR0_visual_main() {
                     }
                 } else if (state == GAME) {
                     SDL_Rect cursorToggleBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y, 150, 50};
-                    SDL_Rect backToMenuBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y + 70, 150, 50}; // Adjusted spacing
-                    SDL_Rect hintBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y + 140, 150, 50}; // Adjusted spacing
-                    SDL_Rect swapSidesBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y + 210, 150, 50}; // Adjusted spacing
-                    SDL_Rect resignBtn = {GRID_OFFSET_X - 180, WINDOW_HEIGHT - GRID_OFFSET_Y - 50, 150, 50}; // Bottom-left
+                    SDL_Rect backToMenuBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y + 70, 150, 50}; 
+                    SDL_Rect hintBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y + 140, 150, 50}; 
+                    SDL_Rect swapSidesBtn = {GRID_OFFSET_X - 180, GRID_OFFSET_Y + 210, 150, 50}; 
+                    SDL_Rect resignBtn = {GRID_OFFSET_X - 180, WINDOW_HEIGHT - GRID_OFFSET_Y - 50, 150, 50};
 
                     if (winner != 0) {
                         SDL_Rect replayBtn = {WINDOW_WIDTH / 2 - 150, WINDOW_HEIGHT / 2 - 30, 400, 60};
@@ -817,7 +810,7 @@ int GR0_visual_main() {
                     100 + (i % 3) * 250, // Position horizontale (3 boutons par ligne)
                     100 + (i / 3) * 140, // Position verticale (adjusted spacing)
                     200, // Largeur
-                    100   // Hauteur (increased height)
+                    100   // Hauteur
                 };
                 GR0_draw_button(renderer, btn, "", (SDL_Color){0, 200, 200, 255});
 
@@ -833,7 +826,7 @@ int GR0_visual_main() {
         SDL_Delay(30);
     }
 
-    TTF_CloseFont(global_font); // Close the font once
+    TTF_CloseFont(global_font); 
     global_font = NULL;
     SDL_DestroyRenderer(renderer);
     renderer = NULL;
@@ -845,7 +838,6 @@ int GR0_visual_main() {
     GR0_freeQueues(moves);
     GR0_free_state(&etat);
 
-    // Free textures when exiting the program
     for (int i = 0; i < 8; ++i) {
         if (agent_name_textures[i]) {
             SDL_DestroyTexture(agent_name_textures[i]);
