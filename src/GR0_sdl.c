@@ -1,15 +1,15 @@
 #include "../head/GR0_sdl.h"
 
 char* GR0_agent_names[NUM_AGENTS] = {
-    "Aléatoire      (elo:1100)",
-    "  Glouton      (elo:1450)",
-    "  Glouton      Heuristique    (elo 1500)",
-    "  Minmax3      (elo 1700)",
-    "  Minmax8      (elo 1900)",
-    "Frontière5     (1000)",
-    "Frontière5    Heuristique (elo 1800)",
-    "Hégémonique    (elo 1500)",
-    "Mixte          (elo 1550)"
+    "Aléatoire      (elo:1000)",
+    "  Glouton      (elo:1400)",
+    "  Glouton      Heuristique    (elo 1450)",
+    "  Minmax3      (elo 1600)",
+    "  Minmax8      (elo 1800)",
+    "Frontière5     (elo 1700)",
+    "Frontière5    Heuristique (elo 1700)",
+    "Hégémonique    (elo 1200)",
+    "Mixte          (elo 1400)"
 };
 
 
