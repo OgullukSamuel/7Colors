@@ -80,6 +80,10 @@ void GR0_resizeQueue(Queue* q) {
         int index = (q->front + i) % old_capacity;
         new_items[2 * i] = q->items[2 * index];
         new_items[2 * i + 1] = q->items[2 * index + 1];
+        // si je comprends bien cette partie, elle peut être optimisée.
+        //tu copie ton ancienne queue en bouclant et en repartant du front
+        //un truc du genre memcpy(new_items, &(q->items[q->front]), (old_capacity - q -> front) * sizeof(int));
+        //et un autre memcpy, même si je ne suis pas sur de l'utilite de repeter les items qui ne sont pas entre le front et le back.
     }
 
     for (int i = 0; i < q->length; i++) {

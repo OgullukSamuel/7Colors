@@ -1,6 +1,6 @@
 #ifndef AGENTS_H
 #define AGENTS_H
-#include "../head/GR0_Gamestate.h"
+#include "../head/GR0_GameState.h"
 #include "../head/GR0_map_functions.h"
 #include <stdint.h>
 #include <stdio.h>

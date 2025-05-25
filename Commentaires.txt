@@ -1,0 +1,35 @@
+Pour commencer, merci beaucoup pour ce rapport et ce code qui sont tous les deux d'une qualité exceptionnelle ! 
+(il reste quelques coquilles à droite à gauche, mais on sent vraiment un investissement sur le projet qui va bien au delà de mes espérances).
+Au moment où j'écris ces lignes, je n'ai pas encore lancé le tournois, mais je pense au vu de ce que j'ai corrigé jusque là que tu as de grandes chances de gagner, y compris contre mon propre min-max.
+Tu vas me forcer à l'améliorer (je pensais déjà utiliser l'approche deep-Q avec du rescaling pour les différentes tailles de grille)
+Je t'enverrai un mail quand ce sera fait, pour te dire si ton heuristique est très différente de celle que j'obtiendrait avec le deep-Q, mais je ne pense pas.
+(en espèrant toujours avoir un mail valide pour te contacter à ce moment là, j'ai cru comprendre que tu nous quitte pour saclay - bonne continuation, mais je ne me fais pas de soucis pour toi :).
+Je suis heureux que mon cours t'ai plu.
+Si tu veux pousser encore plus loin et comprendre comment stockfish fonctionne, voici une vidéo courte qui en parle de la part d'un gars qui l'a amélioré un petit peu : 
+https://youtu.be/geHcAS1fFg8
+
+
+Voici mes commentaires sur le code et le rapport, il s'agit de nit-picking.
+
+- Pas de chance, ça ne compile pas du premier coup (tu inclus GR0_Gamestate.h et non GR0_GameState.h).
+
+- tu aurais pu faire des macros pour les différents minmax pour éviter d'avoir à réécrire le même code plein de fois
+
+- lors de son activation, la barre d'évaluation ralentit beaucoup la partie.
+  Peut-être faire un thread, qui calcule à différentes profondeurs en permanance
+  de manière asynchrone et qui recommence quand un joueur joue un coup ? Comme ça on
+  a une évaluation qui évolue au fure et à mesure des calculs 
+  (je sais c'est complètement hors programme ;)
+
+- Sur l'interface graphique, lorsque le joueur est "bloqué" (il ne peut plus
+ jouer de coup mais n'a pas encore perdu), il n'a pas le choix d'abandonner/de jouer un coup dans le vide.
+
+
+J'ai beaucoup apprécié l'idée de la barre d'évaluation, je pense la reprendre pour les prochains affichages 
+des tournois inter-IA.
+
+- Je te ferais un retour plus détaillé quand j'aurais plus de temps, j'ai déjà largement ce qu'il faut pour te noter
+
+En espèrant tout de même te recroiser (notamment aux interludes),
+bonne continuation,
+Youen
