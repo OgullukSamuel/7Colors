@@ -1,6 +1,6 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
-#include "../head/GR0_Gamestate.h"
+#include "../head/GR0_GameState.h"
 #include "../head/GR0_Agents.h"
 #include <stdio.h>
 

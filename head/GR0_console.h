@@ -1,7 +1,7 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#include "GR0_Gamestate.h"
+#include "GR0_GameState.h"
 #include "GR0_display.h"
 #include "GR0_queue.h"
 #include "GR0_map_functions.h"
