@@ -1,3 +1,5 @@
+La branche principale est le projet en C, la branche secondaire (python library) est en édition,
+
 Le dossier suivant contient les éléments suivants:
 
 -Le fichier "main" est un fichier de renvoie. Il permet à l'utilisateur de selectionner le type d'affichage et d'utilisation du 7color.
